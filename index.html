@@ -312,7 +312,22 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
 .ntc-d{display:flex;gap:3px;}
 .ntc-dv{color:var(--text);}
 
-/* ── LOGIN OVERLAY ── */
+/* ── FORECAST PULSE DOT (CSS-animated, replaces Date.now() canvas pulse) ── */
+.forecast-dot{
+  position:absolute;pointer-events:none;display:none;
+  width:10px;height:10px;border-radius:50%;
+  transform:translate(-50%,-50%);
+  z-index:5;
+}
+.forecast-dot::after{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:1.5px solid currentColor;
+  animation:fcastPulse 1.6s ease-out infinite;
+}
+@keyframes fcastPulse{
+  0%{opacity:.7;transform:scale(.6);}
+  100%{opacity:0;transform:scale(2.2);}
+}
 .login-overlay{position:fixed;inset:0;background:radial-gradient(ellipse at 60% 40%,#060e1e 0%,#03060d 75%);z-index:9999;display:flex;align-items:center;justify-content:center;}
 .login-overlay.hidden{display:none!important;}
 .login-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(17,32,48,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(17,32,48,.5) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;}
@@ -451,6 +466,7 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
       <button class="refbtn" onclick="doRefresh()">⟳ REFRESH</button>
     </div>
     <canvas id="chart"></canvas>
+    <div class="forecast-dot" id="forecastDot"></div>
   </div>
 
   <!-- RIGHT PANEL -->
@@ -643,6 +659,23 @@ const PAIRS=[
 let activePair=PAIRS[0],activeTF='5',activeCat='ALL',searchQ='';
 let cache={};
 let forecastProg=0,rafId=null;
+
+// Forecast dot state (CSS-animated, not canvas)
+let _forecastDotX=0,_forecastDotY=0,_forecastDotColor='#00e676';
+function updateForecastDot(){
+  const dot=document.getElementById('forecastDot');
+  if(!dot)return;
+  const hdr=28; // chart-hdr height
+  dot.style.display='block';
+  dot.style.left=_forecastDotX+'px';
+  dot.style.top=(_forecastDotY+hdr)+'px';
+  dot.style.background=_forecastDotColor;
+  dot.style.color=_forecastDotColor;
+}
+function hideForecastDot(){
+  const dot=document.getElementById('forecastDot');
+  if(dot)dot.style.display='none';
+}
 
 const canvas=document.getElementById('chart');
 const ctx=canvas.getContext('2d');
@@ -918,7 +951,7 @@ function resizeCanvas(){
   if(W<1||H<1)return;
   canvas.width=W*dpr;canvas.height=H*dpr;
   canvas.style.width=W+'px';canvas.style.height=H+'px';
-  if(cache[activePair.sym])drawAll();
+  if(cache[activePair.sym])markDirty();
 }
 window.addEventListener('resize',resizeCanvas);
 // Also observe the chart canvas parent for accurate sizing
@@ -1103,7 +1136,7 @@ function startLivePoll(){
       const el=document.getElementById('apChg');
       el.textContent=(q.chg>=0?'+':'')+q.chg.toFixed(2)+'%';
       el.className='ap-chg '+(q.chg>=0?'up':'dn');
-      drawAll();
+      markDirty();  // price changed — redraw once, then stop
       buildPairList();
       setApiStatus('live');
     }
@@ -1903,10 +1936,17 @@ function drawAll(){
 
     if(vis>0){
       const tx=xOf(hC+vis+1),ty=yOf(result.mean[vis]);
-      const pulse=.5+.5*Math.sin(Date.now()/180);
-      ctx.beginPath();ctx.arc(tx,ty,(7+pulse*3)*dpr,0,Math.PI*2);
-      ctx.fillStyle=result.dir==='BUY'?'#00e676':'#ff1744';ctx.globalAlpha=.15+.25*pulse;ctx.fill();ctx.globalAlpha=1;
-      ctx.beginPath();ctx.arc(tx,ty,3*dpr,0,Math.PI*2);ctx.fillStyle=result.dir==='BUY'?'#00e676':'#ff1744';ctx.fill();
+      // Static dot — no Date.now() so no forced continuous redraw
+      ctx.beginPath();ctx.arc(tx,ty,9*dpr,0,Math.PI*2);
+      ctx.fillStyle=result.dir==='BUY'?'#00e676':'#ff1744';ctx.globalAlpha=.18;ctx.fill();ctx.globalAlpha=1;
+      ctx.beginPath();ctx.arc(tx,ty,3.5*dpr,0,Math.PI*2);
+      ctx.fillStyle=result.dir==='BUY'?'#00e676':'#ff1744';ctx.fill();
+      // Store for CSS overlay pulse dot
+      _forecastDotX=tx/dpr; _forecastDotY=ty/dpr;
+      _forecastDotColor=result.dir==='BUY'?'#00e676':'#ff1744';
+      updateForecastDot();
+    } else {
+      hideForecastDot();
     }
   }
 
@@ -1953,19 +1993,67 @@ function drawAll(){
 }
 
 // Animation
+// ================================================================
+//  SMART RENDER ENGINE — dirty-flag, no continuous redraw
+//  Chart redraws ONLY when:
+//    1. Forecast animation is running (1.6s after pair select)
+//    2. A new price tick arrives (markDirty called)
+//    3. Window resize
+//  After animation ends → chart is STATIC until next data change
+// ================================================================
+let _dirty = false;          // needs redraw?
+let _animating = false;      // forecast animation running?
+let _rafRunning = false;     // is rAF loop active?
+
+function markDirty(){
+  _dirty = true;
+  if(!_rafRunning) _startRenderLoop();
+}
+
+function _startRenderLoop(){
+  if(_rafRunning) return;
+  _rafRunning = true;
+  function loop(){
+    if(_dirty || _animating){
+      _dirty = false;
+      drawAll();
+    }
+    if(_animating || _dirty){
+      rafId = requestAnimationFrame(loop);
+    } else {
+      // Nothing to draw — stop the loop completely
+      _rafRunning = false;
+      rafId = null;
+    }
+  }
+  rafId = requestAnimationFrame(loop);
+}
+
 function startAnim(){
-  forecastProg=0;
-  const dur=1600,start=performance.now();
-  if(rafId)cancelAnimationFrame(rafId);
+  forecastProg = 0;
+  _animating   = true;
+  _dirty       = true;
+  const dur=1600, start=performance.now();
+  if(rafId) cancelAnimationFrame(rafId);
+  _rafRunning = true;
   function frame(now){
     const t=Math.min((now-start)/dur,1);
-    forecastProg=1-Math.pow(1-t,3);drawAll();
-    if(t<1)rafId=requestAnimationFrame(frame);
-    else rafId=requestAnimationFrame(liveLoop);
+    forecastProg = 1-Math.pow(1-t,3);
+    drawAll();
+    if(t<1){
+      rafId = requestAnimationFrame(frame);
+    } else {
+      // Animation done — stop loop, chart is now static
+      _animating  = false;
+      _rafRunning = false;
+      rafId = null;
+    }
   }
-  rafId=requestAnimationFrame(frame);
+  rafId = requestAnimationFrame(frame);
 }
-function liveLoop(){drawAll();rafId=requestAnimationFrame(liveLoop);}
+
+// liveLoop no longer used — kept as no-op for safety
+function liveLoop(){ /* replaced by markDirty() system */ }
 
 // Update right panel
 function updatePanel(pair,result){
