@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SK·FX — Live Forecast v7 | LKT</title>
+<title>SK·FX — SMC v8 | LKT</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Syncopate:wght@400;700&display=swap');
 
@@ -317,7 +317,7 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
 .login-overlay.hidden{display:none!important;}
 .login-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(17,32,48,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(17,32,48,.5) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;}
 .login-glow{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,.07) 0%,transparent 65%);pointer-events:none;top:50%;left:50%;transform:translate(-50%,-50%);}
-.login-box{position:relative;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:40px 38px 34px;width:420px;max-width:94vw;box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 60px rgba(212,168,67,.04);}
+.login-box{position:relative;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:40px 38px 34px;width:420px;max-width:94vw;box-shadow:0 30px 80px rgba(0,0,0,.85);}
 .login-brand{font-family:'Syncopate',sans-serif;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:6px;text-align:center;margin-bottom:4px;}
 .login-sub{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);text-align:center;margin-bottom:32px;}
 .lf{margin-bottom:18px;}
@@ -347,37 +347,24 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
 </head>
 <body>
 
-<!-- ── LOGIN OVERLAY ── -->
+<!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-grid"></div>
   <div class="login-glow"></div>
   <div class="login-box" id="loginBox">
-    <div class="lk-badge">
-      <span class="lk-t" id="loginClock">00:00:00</span>
-      <span class="lk-l">LKT (UTC+5:30)</span>
-    </div>
+    <div class="lk-badge"><span class="lk-t" id="loginClock">00:00:00</span><span class="lk-l">LKT (UTC+5:30)</span></div>
     <div class="login-brand">SK·FX</div>
-    <div class="login-sub">Live Forecast Terminal · v7</div>
-    <div class="lf">
-      <label class="lf-label" for="lUser">Username</label>
-      <div class="lf-wrap">
-        <input class="lf-input" id="lUser" type="text" placeholder="Enter username"
-          autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
-        <span class="lf-icon">👤</span>
-      </div>
-    </div>
-    <div class="lf">
-      <label class="lf-label" for="lPass">Password</label>
-      <div class="lf-wrap">
-        <input class="lf-input" id="lPass" type="password" placeholder="Enter password"
-          autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-        <span class="lf-icon lf-icon-btn" id="eyeBtn" onclick="toggleEye()">👁</span>
-      </div>
-    </div>
+    <div class="login-sub">SMC Terminal · v8</div>
+    <div class="lf"><label class="lf-label" for="lUser">Username</label>
+      <div class="lf-wrap"><input class="lf-input" id="lUser" type="text" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      <span class="lf-icon">👤</span></div></div>
+    <div class="lf"><label class="lf-label" for="lPass">Password</label>
+      <div class="lf-wrap"><input class="lf-input" id="lPass" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <span class="lf-icon lf-icon-btn" id="eyeBtn" onclick="toggleEye()">👁</span></div></div>
     <button class="login-btn" onclick="doLogin()">⟶ ACCESS TERMINAL</button>
     <div class="login-err" id="loginErr">⚠ Invalid username or password</div>
     <div class="login-div"><span>SECURE ACCESS</span></div>
-    <div class="login-foot">SK FOREX ANALYTICS · AUTHORIZED USERS ONLY · LKT UTC+5:30</div>
+    <div class="login-foot">SK FOREX ANALYTICS · SMC ENGINE v8 · LKT UTC+5:30</div>
   </div>
 </div>
 
@@ -497,6 +484,12 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
           </div>
         </div>
         <div class="sh-sub" id="shSub">Select a pair to analyze</div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:4px;">
+          <span style="font-size:8px;letter-spacing:1px;color:var(--dim)">SMC GRADE:</span>
+          <span id="smcGradeEl" style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--dim)">—</span>
+          <span style="font-size:8px;color:var(--dim)">·</span>
+          <span id="smcBiasEl" style="font-size:8px;letter-spacing:1px;color:var(--dim)">NEUTRAL</span>
+        </div>
       </div>
 
       <!-- News Impact Warning (shown when high-impact news) -->
@@ -526,14 +519,16 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
       <div class="sec sk-legend">
         <div class="sec-t">SK Theory — Chart Overlays</div>
         <div class="sk-leg-grid">
-          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(0,230,118,.6)"></div>Bull OB Zone</div>
-          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(255,23,68,.6)"></div>Bear OB Zone</div>
-          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(212,168,67,.6)"></div>FVG (Imbalance)</div>
-          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(179,157,219,.6)"></div>Swing H/L</div>
-          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(255,152,0,.6)"></div>Liq. Sweep</div>
-          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(41,182,246,.6)"></div>CHoCH Mark</div>
-          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(240,200,100,.6)"></div>EMA 20</div>
-          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(41,182,246,.4)"></div>EMA 50</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(0,230,118,.6)"></div>Bull OB (Unmitigated)</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(255,23,68,.6)"></div>Bear OB (Unmitigated)</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(212,168,67,.6)"></div>FVG (Open Gap)</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(179,157,219,.6)"></div>Swing H/L (HH/HL/LH/LL)</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(0,230,118,.35)"></div>BSL (Buy Side Liq.)</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(255,23,68,.35)"></div>SSL (Sell Side Liq.)</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(212,168,67,.3)"></div>OTE Zone (62-79%)</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(41,182,246,.4)"></div>IPDA Range</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(255,152,0,.6)"></div>Inducement</div>
+          <div class="sk-leg-item"><div class="sk-leg-dot" style="background:rgba(240,200,100,.6)"></div>EMA 20/50</div>
         </div>
       </div>
 
@@ -543,9 +538,15 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
         <div id="fcInfo" style="font-size:9px;color:var(--dim)">— run analysis —</div>
       </div>
 
+      <!-- SMC Analysis -->
+      <div class="sec">
+        <div class="sec-t">SMC Analysis</div>
+        <div id="smcInfo" style="font-size:9px;color:var(--dim)">— run analysis —</div>
+      </div>
+
       <!-- Confluence -->
       <div class="sec">
-        <div class="sec-t">SK Confluence (11 Factors)</div>
+        <div class="sec-t">SMC Confluence (14 Weighted Factors)</div>
         <div id="cfList"></div>
       </div>
     </div>
@@ -620,7 +621,6 @@ const PAIRS=[
   {sym:'EUR/NOK',pip:.0001,base:11.850, vol:.10,  cat:'Exotic',currencies:['EUR','NOK']},
   {sym:'XAU/USD',pip:.01,  base:2345.0, vol:3.2,  cat:'Exotic',currencies:['XAU','USD']},
   {sym:'XAG/USD',pip:.001, base:27.500, vol:.22,  cat:'Exotic',currencies:['XAG','USD']},
-  // Additional Minors
   {sym:'EUR/CAD',pip:.0001,base:1.47800,vol:.0011,cat:'Minor',currencies:['EUR','CAD']},
   {sym:'EUR/NZD',pip:.0001,base:1.80200,vol:.0014,cat:'Minor',currencies:['EUR','NZD']},
   {sym:'GBP/NZD',pip:.0001,base:2.11600,vol:.0018,cat:'Minor',currencies:['GBP','NZD']},
@@ -628,12 +628,9 @@ const PAIRS=[
   {sym:'AUD/CHF',pip:.0001,base:.58100, vol:.0007,cat:'Minor',currencies:['AUD','CHF']},
   {sym:'AUD/CAD',pip:.0001,base:.89600, vol:.0009,cat:'Minor',currencies:['AUD','CAD']},
   {sym:'AUD/NZD',pip:.0001,base:1.08500,vol:.0008,cat:'Minor',currencies:['AUD','NZD']},
-  {sym:'NZD/CHF',pip:.0001,base:.53700, vol:.0007,cat:'Minor',currencies:['NZD','CHF']},
-  {sym:'NZD/CAD',pip:.0001,base:.82500, vol:.0008,cat:'Minor',currencies:['NZD','CAD']},
+  {sym:'NZD/JPY',pip:.01,  base:91.200, vol:.07,  cat:'Minor',currencies:['NZD','JPY']},
   {sym:'CAD/CHF',pip:.0001,base:.65400, vol:.0007,cat:'Minor',currencies:['CAD','CHF']},
-  // Additional Exotics
   {sym:'USD/HKD',pip:.0001,base:7.83000,vol:.003,  cat:'Exotic',currencies:['USD','HKD']},
-  {sym:'USD/HUF',pip:.01,  base:362.00, vol:1.20,  cat:'Exotic',currencies:['USD','HUF']},
   {sym:'USD/PLN',pip:.0001,base:4.02000,vol:.012,  cat:'Exotic',currencies:['USD','PLN']},
   {sym:'USD/THB',pip:.001, base:35.100, vol:.100,  cat:'Exotic',currencies:['USD','THB']},
   {sym:'USD/INR',pip:.001, base:83.200, vol:.150,  cat:'Exotic',currencies:['USD','INR']},
@@ -1025,46 +1022,25 @@ async function tdCandles(pair, count=100){
   }
 }
 
-// ── Simulated candles fallback — session-aware realistic ──
+// ── Simulated candles fallback ──
 function genCandles(price,pair,count=100){
   let p=price;
   const candles=[];
-  const tfMin=activeTF==='D'?1440:parseInt(activeTF);
-  const ms=tfMin*60*1000;
+  const ms=(activeTF==='D'?86400:parseInt(activeTF)*60)*1000;
   const now=Date.now();
-  // Trend structure
-  const trendDir=(Math.random()>.5?1:-1);
-  // Impulse zones
-  const impA=Math.floor(count*.28)+Math.floor(Math.random()*8);
-  const impB=Math.floor(count*.62)+Math.floor(Math.random()*7);
-  const impC=Math.floor(count*.87)+Math.floor(Math.random()*5);
+  const trend=(Math.random()-.5)*.7;
+  const iA=Math.floor(Math.random()*20)+45;
+  const iB=Math.floor(Math.random()*15)+15;
   for(let i=count;i>=0;i--){
     const o=p;
-    const ct=new Date(now-i*ms);
-    const utcH=ct.getUTCHours()+ct.getUTCMinutes()/60;
-    // Session volume multiplier (London/NY = high, Asia = medium, off = low)
-    const inLonNY=(utcH>=7&&utcH<16)||(utcH>=13&&utcH<21);
-    const inAsia=(utcH>=0&&utcH<9);
-    const sessM=inLonNY?1.5:inAsia?0.9:0.5;
-    const isImp=Math.abs(i-impA)<3||Math.abs(i-impB)<2||Math.abs(i-impC)<2;
-    const impM=isImp?3.0+Math.random()*.8:1.0;
-    const prog=1-(i/count);
-    // Phase: 0-35% trend, 35-55% consolidation, 55-75% trend, 75-100% late push
-    const phase=prog<.35?0:prog<.55?1:prog<.75?0:2;
-    const phaseBias=phase===0?trendDir*.18:phase===1?0:trendDir*.25;
-    const bias=isImp?trendDir*.4:phaseBias;
-    const v=pair.vol*((0.35+Math.random()*.65)*sessM*impM);
-    const dir=Math.random()>(0.5-bias)?1:-1;
-    const body=v*(0.22+Math.random()*.60);
-    const wick=v*(0.08+Math.random()*.32);
+    const imp=Math.abs(i-iA)<4||Math.abs(i-iB)<3;
+    const v=pair.vol*(imp?2.5+Math.random()*1.5:.5+Math.random());
+    const bias=trend+(imp?trend*2.5:0);
+    const dir=Math.random()>(0.5-bias*.15)?1:-1;
+    const body=v*(.3+Math.random()*.55);
     const cl=o+dir*body;
-    candles.push({
-      t:ct,o,
-      h:Math.max(o,cl)+wick,
-      l:Math.min(o,cl)-wick,
-      c:cl,
-      v:Math.round((900+Math.random()*7000)*sessM)
-    });
+    candles.push({t:new Date(now-i*ms),o,h:Math.max(o,cl)+v*Math.random()*.38,
+      l:Math.min(o,cl)-v*Math.random()*.38,c:cl,v:600+Math.random()*5000});
     p=cl;
   }
   candles[candles.length-1].c=price;
@@ -1137,134 +1113,403 @@ function startLivePoll(){
 }
 
 // ================================================================
-//  SK THEORY ANALYSIS — with News Impact Factor
+//  SMC ENGINE v2 — Smart Money Concepts Full Analysis
+//  Concepts: MSS, BOS, CHoCH, OB (mitigated/unmitigated),
+//  FVG (open/closed), Liquidity levels (SSL/BSL/EQH/EQL),
+//  Premium/Discount/OTE, IPDA range, Inducement,
+//  Weighted confluence scoring, structure-based SL/TP
 // ================================================================
 function skAnalyze(candles,price,pair){
   const n=candles.length;
+  if(n<20) return {dir:'WAIT',str:0,bull:0,bear:0,factors:[],entry:price,sl:null,tp1:null,tp2:null,tp3:null,atr:pair.vol,rsi:50,e20:price,e50:price,e20A:[price],e50A:[price],macd:0,bosUp:false,bosDown:false,chochB:false,chochS:false,chochIdx:null,lsH:false,lsL:false,lsIdx:null,inOB:false,obB:false,obLo:0,obHi:0,obList:[],fvgs:[],activeFVG:null,fvgUp:false,fvgDn:false,swH:price,swL:price,swings:[],recentSwH:[],recentSwL:[],mid:price,mean:[price],upper:[price],lower:[price],fPaths:[[price]],fSteps:1,candles,price,confirmedFactors:[],volSpike:false,sess:false,disc:false,prem:false,overlap:false,newsImpact:'none',newsHighImpending:false,pairNews:[],smcBias:'NEUTRAL',smcGrade:'D',inducement:null,bsl:null,ssl:null,eqh:null,eql:null,oteZone:null,mitigatedOBs:[],openFVGs:[],structureSeq:[],ipdaHigh:price,ipdaLow:price};
+
   const cls=candles.map(c=>c.c);
   const his=candles.map(c=>c.h);
   const los=candles.map(c=>c.l);
+  const ops=candles.map(c=>c.o);
 
+  // ── Utility ──────────────────────────────────────────────
   function ema(arr,p){const k=2/(p+1);let v=arr[0];for(let i=1;i<arr.length;i++)v=arr[i]*k+v*(1-k);return v;}
   function emaArr(arr,p){const k=2/(p+1);const r=[arr[0]];for(let i=1;i<arr.length;i++)r.push(arr[i]*k+r[i-1]*(1-k));return r;}
+  function highest(arr,from,to){return Math.max(...arr.slice(from,to));}
+  function lowest(arr,from,to){return Math.min(...arr.slice(from,to));}
 
-  const e20=ema(cls,20),e50=ema(cls,50);
-  const e20A=emaArr(cls,20),e50A=emaArr(cls,50);
+  // ── Core indicators ───────────────────────────────────────
+  const e20=ema(cls,20), e50=ema(cls,50), e200=ema(cls,Math.min(200,n));
+  const e20A=emaArr(cls,20), e50A=emaArr(cls,50);
 
-  let g=0,l=0;const rp=Math.min(14,n-2);
+  let g=0,l=0; const rp=Math.min(14,n-2);
   for(let i=n-rp;i<n;i++){const d=cls[i]-cls[i-1];d>0?g+=d:l+=Math.abs(d);}
-  const rsi=100-100/(1+g/(l||.001));
+  const rsi=100-100/(1+(g/(l||0.001)));
 
-  let atrS=0;const ap=Math.min(14,n-1);
+  let atrS=0; const ap=Math.min(14,n-1);
   for(let i=n-ap;i<n;i++)atrS+=his[i]-los[i];
   const atr=atrS/ap;
 
-  // Market structure
+  const macd=ema(cls,12)-ema(cls,26);
+  const avgV=candles.slice(-10).reduce((s,c)=>s+c.v,0)/10;
+  const volSpike=candles[n-1].v>avgV*1.5;
+
+  // ── 1. SWING STRUCTURE DETECTION (proper lookback=3) ─────
   const swings=[];
-  for(let i=3;i<n-3;i++){
-    const isSwH=his[i]>his[i-1]&&his[i]>his[i-2]&&his[i]>his[i+1]&&his[i]>his[i+2];
-    const isSwL=los[i]<los[i-1]&&los[i]<los[i-2]&&los[i]<los[i+1]&&los[i]<los[i+2];
-    if(isSwH)swings.push({i,type:'H',price:his[i]});
-    if(isSwL)swings.push({i,type:'L',price:los[i]});
+  const LB=3; // swing lookback bars each side
+  for(let i=LB;i<n-LB;i++){
+    let swH=true, swL=true;
+    for(let j=1;j<=LB;j++){
+      if(his[i]<=his[i-j]||his[i]<=his[i+j]) swH=false;
+      if(los[i]>=los[i-j]||los[i]>=los[i+j]) swL=false;
+    }
+    if(swH) swings.push({i,type:'H',price:his[i]});
+    if(swL) swings.push({i,type:'L',price:los[i]});
   }
-  const recentSwH=swings.filter(s=>s.type==='H').slice(-3);
-  const recentSwL=swings.filter(s=>s.type==='L').slice(-3);
-  const swH=recentSwH.length?Math.max(...recentSwH.map(s=>s.price)):Math.max(...his.slice(-25,n-2));
-  const swL=recentSwL.length?Math.min(...recentSwL.map(s=>s.price)):Math.min(...los.slice(-25,n-2));
+  const swHs=swings.filter(s=>s.type==='H');
+  const swLs=swings.filter(s=>s.type==='L');
+  const recentSwH=swHs.slice(-4);
+  const recentSwL=swLs.slice(-4);
+  const swH=recentSwH.length ? Math.max(...recentSwH.map(s=>s.price)) : highest(his,n-30,n-1);
+  const swL=recentSwL.length ? Math.min(...recentSwL.map(s=>s.price)) : lowest(los,n-30,n-1);
 
-  const prevH=Math.max(...his.slice(n-25,n-6));
-  const prevL=Math.min(...los.slice(n-25,n-6));
-  const curH=Math.max(...his.slice(n-5,n));
-  const curL=Math.min(...los.slice(n-5,n));
-  const bosUp=curH>prevH;
-  const bosDown=curL<prevL;
-  const chochB=bosDown&&price>cls[n-3]&&price>e20;
-  const chochS=bosUp&&price<cls[n-3]&&price<e20;
-  const chochIdx=chochB||chochS?n-4:null;
+  // ── 2. MARKET STRUCTURE SEQUENCE (HH/HL/LH/LL) ───────────
+  // Build alternating H/L sequence from swings
+  const structureSeq=[]; // [{type:'HH'|'HL'|'LH'|'LL', price, i}]
+  const allSwings=[...swings].sort((a,b)=>a.i-b.i);
+  let lastH=null, lastL=null;
+  for(const sw of allSwings){
+    if(sw.type==='H'){
+      if(lastH===null){ structureSeq.push({...sw,label:'SH'}); }
+      else if(sw.price>lastH.price){ structureSeq.push({...sw,label:'HH'}); }
+      else { structureSeq.push({...sw,label:'LH'}); }
+      lastH=sw;
+    } else {
+      if(lastL===null){ structureSeq.push({...sw,label:'SL'}); }
+      else if(sw.price<lastL.price){ structureSeq.push({...sw,label:'LL'}); }
+      else { structureSeq.push({...sw,label:'HL'}); }
+      lastL=sw;
+    }
+  }
+  const recentSeq=structureSeq.slice(-8);
 
-  // Order Blocks
+  // Determine HTF bias from structure sequence
+  const hhCount=recentSeq.filter(s=>s.label==='HH').length;
+  const hlCount=recentSeq.filter(s=>s.label==='HL').length;
+  const llCount=recentSeq.filter(s=>s.label==='LL').length;
+  const lhCount=recentSeq.filter(s=>s.label==='LH').length;
+  const bullStructure=hhCount+hlCount, bearStructure=llCount+lhCount;
+  const smcBias=bullStructure>bearStructure?'BULLISH':bearStructure>bullStructure?'BEARISH':'NEUTRAL';
+
+  // ── 3. BOS vs CHoCH (proper SMC distinction) ──────────────
+  // BOS = break of swing high/low IN THE DIRECTION of trend (continuation)
+  // CHoCH = break of swing high/low AGAINST trend (reversal signal)
+  const prevSwH=swHs.slice(-3,-1);
+  const prevSwL=swLs.slice(-3,-1);
+  const lastSwH=swHs[swHs.length-1];
+  const lastSwL=swLs[swLs.length-1];
+
+  // Check recent closes for breaks
+  const recent5H=highest(his,n-6,n);
+  const recent5L=lowest(los,n-6,n);
+  const prevH25=prevSwH.length?Math.max(...prevSwH.map(s=>s.price)):highest(his,n-25,n-6);
+  const prevL25=prevSwL.length?Math.min(...prevSwL.map(s=>s.price)):lowest(los,n-25,n-6);
+
+  const bosUp=recent5H>prevH25 && smcBias==='BULLISH';   // BOS up = bullish continuation
+  const bosDown=recent5L<prevL25 && smcBias==='BEARISH'; // BOS down = bearish continuation
+  // CHoCH = price broke structure AGAINST current bias (reversal)
+  const chochB=recent5H>prevH25 && smcBias==='BEARISH';  // CHoCH bullish = bears failing
+  const chochS=recent5L<prevL25 && smcBias==='BULLISH';  // CHoCH bearish = bulls failing
+  const chochIdx=(chochB||chochS)?n-4:null;
+
+  // ── 4. ORDER BLOCKS (with mitigation tracking) ─────────────
+  // SMC OB: Last bearish candle before a bullish impulse (bull OB)
+  //         Last bullish candle before a bearish impulse (bear OB)
   const obs=[];
-  for(let i=5;i<n-2;i++){
-    const bigBull=candles[i].c>candles[i].o&&(candles[i].c-candles[i].o)>atr*.5;
-    const bigBear=candles[i].c<candles[i].o&&(candles[i].o-candles[i].c)>atr*.5;
-    if(bigBull)obs.push({i,type:'bull',lo:Math.min(candles[i].o,candles[i].c),hi:Math.max(candles[i].o,candles[i].c)});
-    if(bigBear)obs.push({i,type:'bear',lo:Math.min(candles[i].o,candles[i].c),hi:Math.max(candles[i].o,candles[i].c)});
-  }
-  const obList=obs.slice(-2);
-  const mainOB=obList[obList.length-1]||null;
-  const inOB=mainOB?price>=mainOB.lo*.9999&&price<=mainOB.hi*1.0001:false;
-  const obB=mainOB?.type==='bull';
-  const obLo=mainOB?.lo||0,obHi=mainOB?.hi||0;
+  for(let i=3;i<n-3;i++){
+    // Check if followed by 3-bar impulse move
+    const nextUp=cls[i+1]>ops[i+1]&&cls[i+2]>cls[i+1]&&cls[i+2]>his[i]; // strong up move after
+    const nextDn=cls[i+1]<ops[i+1]&&cls[i+2]<cls[i+1]&&cls[i+2]<los[i]; // strong down move after
+    // SMC bull OB = bearish candle followed by strong bullish impulse
+    const isBearCandle=cls[i]<ops[i]&&(ops[i]-cls[i])>atr*0.4;
+    // SMC bear OB = bullish candle followed by strong bearish impulse
+    const isBullCandle=cls[i]>ops[i]&&(cls[i]-ops[i])>atr*0.4;
 
-  // FVG
-  const fvgList=[];
-  for(let i=2;i<n;i++){
-    if(candles[i].l>candles[i-2].h)fvgList.push({i,type:'bull',lo:candles[i-2].h,hi:candles[i].l,mid:(candles[i-2].h+candles[i].l)/2});
-    if(candles[i].h<candles[i-2].l)fvgList.push({i,type:'bear',lo:candles[i].h,hi:candles[i-2].l,mid:(candles[i].h+candles[i-2].l)/2});
+    if(isBearCandle&&nextUp){
+      obs.push({i,type:'bull',lo:Math.min(cls[i],ops[i]),hi:Math.max(cls[i],ops[i]),fullLo:los[i],fullHi:his[i]});
+    }
+    if(isBullCandle&&nextDn){
+      obs.push({i,type:'bear',lo:Math.min(cls[i],ops[i]),hi:Math.max(cls[i],ops[i]),fullLo:los[i],fullHi:his[i]});
+    }
   }
-  const fvgs=fvgList.slice(-3);
+
+  // Track mitigation: OB is mitigated if price returned to its body
+  obs.forEach(ob=>{
+    ob.mitigated=false;
+    for(let j=ob.i+2;j<n;j++){
+      if(ob.type==='bull'&&los[j]<=ob.hi){ ob.mitigated=true; ob.mitigatedAt=j; break; }
+      if(ob.type==='bear'&&his[j]>=ob.lo){ ob.mitigated=true; ob.mitigatedAt=j; break; }
+    }
+  });
+
+  const openOBs=obs.filter(ob=>!ob.mitigated).slice(-4);
+  const mitigatedOBs=obs.filter(ob=>ob.mitigated).slice(-2);
+  const obList=openOBs;
+  const mainOB=openOBs[openOBs.length-1]||null;
+  const inOB=mainOB?price>=mainOB.lo*0.9998&&price<=mainOB.hi*1.0002:false;
+  const obB=mainOB?.type==='bull';
+  const obLo=mainOB?.lo||0, obHi=mainOB?.hi||0;
+
+  // ── 5. FVG — Fair Value Gaps (open vs closed) ─────────────
+  const fvgAll=[];
+  for(let i=2;i<n;i++){
+    if(los[i]>his[i-2]){
+      fvgAll.push({i,type:'bull',lo:his[i-2],hi:los[i],mid:(his[i-2]+los[i])/2,closed:false});
+    }
+    if(his[i]<los[i-2]){
+      fvgAll.push({i,type:'bear',lo:his[i],hi:los[i-2],mid:(his[i]+los[i-2])/2,closed:false});
+    }
+  }
+  // Check if FVG is filled (price returned to the gap)
+  fvgAll.forEach(fvg=>{
+    for(let j=fvg.i+1;j<n;j++){
+      if(fvg.type==='bull'&&los[j]<=fvg.mid){ fvg.closed=true; break; }
+      if(fvg.type==='bear'&&his[j]>=fvg.mid){ fvg.closed=true; break; }
+    }
+  });
+  const openFVGs=fvgAll.filter(f=>!f.closed).slice(-4);
+  const fvgs=openFVGs.slice(-3);
   const activeFVG=fvgs[fvgs.length-1]||null;
   const fvgUp=activeFVG?.type==='bull';
   const fvgDn=activeFVG?.type==='bear';
 
-  const lsH=his[n-1]>swH&&cls[n-1]<swH;
-  const lsL=los[n-1]<swL&&cls[n-1]>swL;
-  const lsIdx=lsH||lsL?n-1:null;
+  // ── 6. LIQUIDITY LEVELS ────────────────────────────────────
+  // BSL = Buy Side Liquidity (highs where stops cluster) = equal highs
+  // SSL = Sell Side Liquidity (lows where stops cluster) = equal lows
+  const EQ_THRESH=atr*0.15; // "equal" if within 15% ATR
 
-  const macd=ema(cls,12)-ema(cls,26);
-  const avgV=candles.slice(-10).reduce((s,c)=>s+c.v,0)/10;
-  const volSpike=candles[n-1].v>avgV*1.4;
-  const rng=Math.max(...his.slice(-40))-Math.min(...los.slice(-40));
-  const mid=Math.min(...los.slice(-40))+rng/2;
-  const disc=price<mid,prem=price>mid;
+  // Find equal highs (EQH) = BSL
+  let bsl=null, eqh=null;
+  const hGroups=[];
+  swHs.slice(-6).forEach(sw=>{
+    const grp=hGroups.find(g=>Math.abs(g.price-sw.price)<EQ_THRESH);
+    if(grp){grp.count++;grp.price=(grp.price+sw.price)/2;}
+    else hGroups.push({price:sw.price,count:1,i:sw.i});
+  });
+  const eqHGroup=hGroups.filter(g=>g.count>=2).sort((a,b)=>b.count-a.count)[0];
+  if(eqHGroup){ eqh=eqHGroup.price; bsl=eqHGroup.price; }
+  if(!bsl) bsl=swH; // fallback
 
-  // Sessions
+  // Find equal lows (EQL) = SSL
+  let ssl=null, eql=null;
+  const lGroups=[];
+  swLs.slice(-6).forEach(sw=>{
+    const grp=lGroups.find(g=>Math.abs(g.price-sw.price)<EQ_THRESH);
+    if(grp){grp.count++;grp.price=(grp.price+sw.price)/2;}
+    else lGroups.push({price:sw.price,count:1,i:sw.i});
+  });
+  const eqLGroup=lGroups.filter(g=>g.count>=2).sort((a,b)=>b.count-a.count)[0];
+  if(eqLGroup){ eql=eqLGroup.price; ssl=eqLGroup.price; }
+  if(!ssl) ssl=swL; // fallback
+
+  // ── 7. LIQUIDITY SWEEP (refined) ──────────────────────────
+  const lsH=his[n-1]>bsl&&cls[n-1]<bsl;   // swept BSL then closed below
+  const lsL=los[n-1]<ssl&&cls[n-1]>ssl;   // swept SSL then closed above
+  const lsIdx=(lsH||lsL)?n-1:null;
+
+  // ── 8. PREMIUM / DISCOUNT / OTE ZONE ─────────────────────
+  // Uses 40-bar range for premium/discount
+  const rangeH=highest(his,Math.max(0,n-40),n);
+  const rangeL=lowest(los,Math.max(0,n-40),n);
+  const rng=rangeH-rangeL;
+  const mid=rangeL+rng*0.5;        // 50% = equilibrium
+  const disc=price<rangeL+rng*0.5; // below 50% = discount
+  const prem=price>rangeL+rng*0.5; // above 50% = premium
+  // OTE zone = 62–79% of the retracement (Fibonacci)
+  // For buys: OTE is 62-79% pullback from impulse low
+  // For sells: OTE is 62-79% pullback from impulse high
+  const ote62=rangeL+rng*0.62, ote79=rangeL+rng*0.79;
+  const oteZone={lo:ote62,hi:ote79,mid:rangeL+rng*0.705};
+  const inOTE=price>=ote62&&price<=ote79;
+  // For bearish: OTE is 21-38% (top of range retracement)
+  const oteB62=rangeL+rng*0.21, oteB79=rangeL+rng*0.38;
+  const inOTEBear=price>=oteB62&&price<=oteB79;
+
+  // ── 9. IPDA (Interbank Price Delivery Algorithm) Range ────
+  // Weekly/20-bar range: identifies where price is likely delivered next
+  const ipdaLookback=Math.min(20,n-1);
+  const ipdaHigh=highest(his,n-ipdaLookback,n-1);
+  const ipdaLow=lowest(los,n-ipdaLookback,n-1);
+  const ipdaMid=(ipdaHigh+ipdaLow)/2;
+  // Price below IPDA mid = likely targeting IPDA high, vice versa
+  const ipdaBullish=price<ipdaMid;
+  const ipdaBearish=price>ipdaMid;
+
+  // ── 10. INDUCEMENT ────────────────────────────────────────
+  // Inducement = a minor swing high/low before a major liquidity pool
+  // Lures retail traders into wrong positions before the real move
+  let inducement=null;
+  if(smcBias==='BULLISH'&&swLs.length>=2){
+    const last2L=swLs.slice(-2);
+    if(last2L[1].price>last2L[0].price){ // HL = inducement low (fake liquidity grab)
+      inducement={type:'bull',price:last2L[1].price,i:last2L[1].i,desc:'HL Inducement'};
+    }
+  }
+  if(smcBias==='BEARISH'&&swHs.length>=2){
+    const last2H=swHs.slice(-2);
+    if(last2H[1].price<last2H[0].price){ // LH = inducement high
+      inducement={type:'bear',price:last2H[1].price,i:last2H[1].i,desc:'LH Inducement'};
+    }
+  }
+
+  // ── 11. SESSIONS ──────────────────────────────────────────
   const activeSess=getSessionsStatus();
   const sess=activeSess.length>0;
   const overlap=getOverlaps(activeSess).length>0;
+  const isKillzone=overlap; // London/NY overlap = kill zone
 
-  // News Impact Factor
+  // ── 12. NEWS ─────────────────────────────────────────────
   const pairNews=getNewsForPair(pair.sym);
   const highNews=pairNews.filter(n=>n.impact==='high'&&n.minsAway<120);
-  const medNews=pairNews.filter(n=>n.impact==='med'&&n.minsAway<120);
   const newsImpact=newsImpactForPair(pair.sym);
   const newsHighImpending=highNews.length>0;
   const newsBullish=pairNews.some(n=>n.impact==='high'&&n.minsAway<180&&n.direction==='bull'&&pair.currencies[0]===n.currencies[0]);
   const newsBearish=pairNews.some(n=>n.impact==='high'&&n.minsAway<180&&n.direction==='bear'&&pair.currencies[0]===n.currencies[0]);
 
+  // ── 13. WEIGHTED SMC CONFLUENCE SCORING ───────────────────
+  // Each factor has a WEIGHT — not all are equal
+  // Total possible weight used for % calculation
   const factors=[
-    {name:'Market Structure BOS/CHoCH', bull:bosUp||chochB,     bear:bosDown||chochS,  bv:'BOS ↑',  sv:'BOS ↓'},
-    {name:'Order Block Zone',           bull:inOB&&obB,          bear:inOB&&!obB,       bv:'Bull OB', sv:'Bear OB'},
-    {name:'Fair Value Gap (FVG)',        bull:fvgDn,              bear:fvgUp,            bv:'Gap ↓',   sv:'Gap ↑'},
-    {name:'Liquidity Sweep',            bull:lsL,                bear:lsH,              bv:'Low Swept',sv:'High Swept'},
-    {name:'EMA 20/50 Alignment',        bull:price>e20&&e20>e50, bear:price<e20&&e20<e50,bv:'Bullish', sv:'Bearish'},
-    {name:'RSI Level',                  bull:rsi<40,             bear:rsi>60,           bv:`OS ${rsi.toFixed(0)}`,sv:`OB ${rsi.toFixed(0)}`},
-    {name:'MACD Direction',             bull:macd>0,             bear:macd<0,           bv:'Positive', sv:'Negative'},
-    {name:'Volume Spike',               bull:volSpike,           bear:volSpike,         bv:'Spike ↑',  sv:'Spike ↑'},
-    {name:'Premium/Discount Zone',      bull:disc,               bear:prem,             bv:'Discount', sv:'Premium'},
-    {name:'Session Timing',             bull:sess,               bear:sess,             bv:overlap?'OVERLAP ⚡':'Active',sv:overlap?'OVERLAP ⚡':'Active'},
-    {name:'News Impact Catalyst',       bull:newsBullish,        bear:newsBearish,      bv:'Bull News', sv:'Bear News'},
+    // STRUCTURE (weight 3 — highest importance)
+    {name:'Market Structure (BOS/CHoCH)', w:3,
+      bull:bosUp||chochB, bear:bosDown||chochS,
+      bv:bosUp?'BOS ↑':chochB?'CHoCH ↑':'--',
+      sv:bosDown?'BOS ↓':chochS?'CHoCH ↓':'--'},
+
+    {name:'SMC Bias (HH/HL vs LH/LL)', w:3,
+      bull:smcBias==='BULLISH', bear:smcBias==='BEARISH',
+      bv:'Bull Bias', sv:'Bear Bias'},
+
+    // ORDER BLOCK (weight 3)
+    {name:'Order Block (Unmitigated)', w:3,
+      bull:inOB&&obB, bear:inOB&&!obB,
+      bv:'At Bull OB', sv:'At Bear OB'},
+
+    // FVG (weight 2)
+    {name:'Fair Value Gap (Open)', w:2,
+      bull:fvgDn&&!activeFVG?.closed, bear:fvgUp&&!activeFVG?.closed,
+      bv:'Bear FVG ↓', sv:'Bull FVG ↑'},
+
+    // LIQUIDITY SWEEP (weight 3 — very reliable SMC signal)
+    {name:'Liquidity Sweep + Rejection', w:3,
+      bull:lsL, bear:lsH,
+      bv:'SSL Swept', sv:'BSL Swept'},
+
+    // PREMIUM/DISCOUNT (weight 2)
+    {name:'Premium / Discount Zone', w:2,
+      bull:disc, bear:prem,
+      bv:'Discount Zone', sv:'Premium Zone'},
+
+    // OTE FIBONACCI (weight 2)
+    {name:'OTE Zone (62–79% Fib)', w:2,
+      bull:inOTE&&smcBias==='BULLISH', bear:inOTEBear&&smcBias==='BEARISH',
+      bv:'OTE 62-79%', sv:'OTE 21-38%'},
+
+    // IPDA DELIVERY (weight 2)
+    {name:'IPDA Range Delivery', w:2,
+      bull:ipdaBullish, bear:ipdaBearish,
+      bv:'Targeting IPDA High', sv:'Targeting IPDA Low'},
+
+    // EMA ALIGNMENT (weight 1)
+    {name:'EMA 20/50/200 Alignment', w:1,
+      bull:price>e20&&e20>e50, bear:price<e20&&e20<e50,
+      bv:'Price > EMA stack', sv:'Price < EMA stack'},
+
+    // RSI (weight 1)
+    {name:'RSI Extreme Level', w:1,
+      bull:rsi<35, bear:rsi>65,
+      bv:'Oversold '+rsi.toFixed(0), sv:'Overbought '+rsi.toFixed(0)},
+
+    // INDUCEMENT (weight 2)
+    {name:'Inducement Identified', w:2,
+      bull:inducement?.type==='bull', bear:inducement?.type==='bear',
+      bv:'HL Inducement', sv:'LH Inducement'},
+
+    // KILL ZONE (weight 2)
+    {name:'Kill Zone / Session Timing', w:2,
+      bull:sess, bear:sess,
+      bv:isKillzone?'Kill Zone ⚡':'Active Session',
+      sv:isKillzone?'Kill Zone ⚡':'Active Session'},
+
+    // VOLUME (weight 1)
+    {name:'Volume Confirmation', w:1,
+      bull:volSpike&&smcBias==='BULLISH', bear:volSpike&&smcBias==='BEARISH',
+      bv:'Vol Spike', sv:'Vol Spike'},
+
+    // NEWS (weight 2)
+    {name:'News Catalyst', w:2,
+      bull:newsBullish, bear:newsBearish,
+      bv:'Bull News', sv:'Bear News'},
   ];
 
-  let bull=0,bear=0;
-  factors.forEach(f=>{if(f.bull)bull++;if(f.bear)bear++;});
-  const dir=bull>bear?'BUY':bear>bull?'SELL':'WAIT';
-  const str=Math.round(Math.max(bull,bear)/factors.length*100);
+  // Weighted scoring
+  let bullW=0, bearW=0, maxW=0;
+  factors.forEach(f=>{
+    maxW+=f.w;
+    if(f.bull) bullW+=f.w;
+    if(f.bear) bearW+=f.w;
+  });
+  const bull=factors.filter(f=>f.bull).length;
+  const bear=factors.filter(f=>f.bear).length;
+  const dir=bullW>bearW?'BUY':bearW>bullW?'SELL':'WAIT';
+  const str=Math.round(Math.max(bullW,bearW)/maxW*100);
 
-  const slM=1.5,tp1M=2.0,tp2M=3.5,tp3M=6.0;
+  // SMC Grade based on key factors alignment
+  const keyBull=[(bosUp||chochB),(inOB&&obB),(lsL),(disc||inOTE)].filter(Boolean).length;
+  const keyBear=[(bosDown||chochS),(inOB&&!obB),(lsH),(prem||inOTEBear)].filter(Boolean).length;
+  const keyScore=dir==='BUY'?keyBull:dir==='SELL'?keyBear:0;
+  const smcGrade=keyScore>=4?'A+':keyScore===3?'A':keyScore===2?'B':keyScore===1?'C':'D';
+
+  // ── 14. SL/TP AT STRUCTURE LEVELS (SMC-based) ─────────────
+  // SL: beyond the last swing low (for BUY) or swing high (for SELL)
+  // TP: next significant liquidity level (BSL/SSL)
   const entry=price;
-  const sl=dir==='BUY'?price-atr*slM:dir==='SELL'?price+atr*slM:null;
-  const tp1=dir==='BUY'?price+atr*tp1M:dir==='SELL'?price-atr*tp1M:null;
-  const tp2=dir==='BUY'?price+atr*tp2M:dir==='SELL'?price-atr*tp2M:null;
-  const tp3=dir==='BUY'?price+atr*tp3M:dir==='SELL'?price-atr*tp3M:null;
+  let sl=null, tp1=null, tp2=null, tp3=null;
 
-  const fSteps=35,paths=18;
+  if(dir==='BUY'){
+    // SL below last swing low or OB low (whichever is closer to price)
+    const slSwing=lastSwL?lastSwL.price-atr*0.3:price-atr*1.5;
+    const slOB=mainOB&&obB?mainOB.fullLo-atr*0.2:null;
+    sl=slOB?Math.max(slSwing,slOB):slSwing; // tighter SL
+    // TP1 = 50% equilibrium, TP2 = swing high, TP3 = BSL / IPDA high
+    tp1=mid;
+    tp2=swH;
+    tp3=bsl>swH?bsl:ipdaHigh; // target liquidity
+  } else if(dir==='SELL'){
+    const slSwing=lastSwH?lastSwH.price+atr*0.3:price+atr*1.5;
+    const slOB=mainOB&&!obB?mainOB.fullHi+atr*0.2:null;
+    sl=slOB?Math.min(slSwing,slOB):slSwing;
+    tp1=mid;
+    tp2=swL;
+    tp3=ssl<swL?ssl:ipdaLow;
+  }
+
+  // Validate — ensure SL gives at least 1:1.5 R:R to TP1
+  if(sl&&tp1){
+    const riskPips=Math.abs(entry-sl);
+    const rewardPips=Math.abs(tp1-entry);
+    if(rewardPips<riskPips*1.5){
+      // Expand TP1 to ensure minimum 1:2 R:R
+      if(dir==='BUY') tp1=entry+riskPips*2;
+      else tp1=entry-riskPips*2;
+    }
+  }
+
+  // ── 15. FORECAST PATHS ────────────────────────────────────
+  const fSteps=35, paths=18;
   const fPaths=[];
   for(let p2=0;p2<paths;p2++){
-    const path=[price];let cur=price;
-    const bias=dir==='BUY'?.56:dir==='SELL'?.44:.5;
+    const path=[price]; let cur=price;
+    const bias=dir==='BUY'?0.57:dir==='SELL'?0.43:0.5;
+    const momentum=str/100*0.15;
     for(let s=0;s<fSteps;s++){
-      cur+=(Math.random()-.5)*atr*.9+(Math.random()>bias?-1:1)*atr*.12;
+      cur+=(Math.random()-0.5)*atr*0.85+(Math.random()>bias?-1:1)*atr*(0.1+momentum);
       path.push(cur);
     }
     fPaths.push(path);
@@ -1273,14 +1518,29 @@ function skAnalyze(candles,price,pair){
   const upper=Array.from({length:fSteps+1},(_,i)=>Math.max(...fPaths.map(p3=>p3[i])));
   const lower=Array.from({length:fSteps+1},(_,i)=>Math.min(...fPaths.map(p3=>p3[i])));
 
-  const confirmedFactors=factors.filter(f=>f.bull||f.bear).map(f=>f.name.split(' ')[0]);
+  const confirmedFactors=factors.filter(f=>(dir==='BUY'?f.bull:f.bear)).map(f=>f.name.split(' ')[0]).slice(0,5);
 
-  return{dir,str,bull,bear,factors,entry,sl,tp1,tp2,tp3,atr,rsi,
-    e20,e50,e20A,e50A,macd,bosUp,bosDown,chochB,chochS,chochIdx,
-    lsH,lsL,lsIdx,inOB,obB,obLo,obHi,obList,fvgs,activeFVG,fvgUp,fvgDn,
-    swH,swL,swings,recentSwH,recentSwL,mid,mean,upper,lower,fPaths,fSteps,
-    candles,price,confirmedFactors,volSpike,sess,disc,prem,overlap,
-    newsImpact,newsHighImpending,pairNews};
+  return{
+    dir,str,bull,bear,factors,entry,sl,tp1,tp2,tp3,atr,rsi,
+    e20,e50,e20A,e50A,macd,
+    bosUp,bosDown,chochB,chochS,chochIdx,
+    lsH,lsL,lsIdx,
+    inOB,obB,obLo,obHi,obList,mitigatedOBs,
+    fvgs,openFVGs,activeFVG,fvgUp,fvgDn,
+    swH,swL,swings,recentSwH,recentSwL,
+    mid,mean,upper,lower,fPaths,fSteps,
+    candles,price,confirmedFactors,volSpike,
+    sess,disc,prem,overlap,isKillzone,
+    newsImpact,newsHighImpending,pairNews,
+    // SMC specific
+    smcBias,smcGrade,
+    structureSeq:recentSeq,
+    inducement,bsl,ssl,eqh,eql,oteZone,
+    ipdaHigh,ipdaLow,ipdaMid,ipdaBullish,ipdaBearish,
+    inOTE,inOTEBear,
+    eqh,eql,
+    rangeH,rangeL
+  };
 }
 
 function fP(v,pip){if(v===null||v===undefined)return'—';const d=pip<.001?5:pip<.1?3:2;return v.toFixed(d);}
@@ -1403,12 +1663,62 @@ function drawAll(){
     }
   });
 
-  // Mid line
+  // Mid line (Equilibrium 50%)
   const midY=yOf(result.mid);
   ctx.strokeStyle='rgba(74,96,112,.4)';ctx.lineWidth=.6*dpr;ctx.setLineDash([6*dpr,3*dpr]);
   ctx.beginPath();ctx.moveTo(ML,midY);ctx.lineTo(divX,midY);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='rgba(74,96,112,.5)';ctx.font=`${6.5*dpr}px IBM Plex Mono`;ctx.textAlign='left';
-  ctx.fillText('EQ',ML+2,midY-2);
+  ctx.fillText('EQ 50%',ML+2,midY-2);
+
+  // OTE Zone (62-79% Fibonacci retracement) — golden zone
+  if(result.oteZone){
+    const oteT=yOf(result.oteZone.hi), oteB=yOf(result.oteZone.lo);
+    ctx.fillStyle='rgba(212,168,67,.07)';
+    ctx.fillRect(ML,oteT,CW,oteB-oteT);
+    ctx.strokeStyle='rgba(212,168,67,.25)';ctx.lineWidth=.5*dpr;ctx.setLineDash([3*dpr,3*dpr]);
+    ctx.beginPath();ctx.moveTo(ML,yOf(result.oteZone.mid));ctx.lineTo(divX,yOf(result.oteZone.mid));ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(212,168,67,.5)';ctx.font=`${6*dpr}px IBM Plex Mono`;ctx.textAlign='left';
+    ctx.fillText('OTE 62-79%',ML+2,oteT+8*dpr);
+  }
+
+  // BSL (Buy Side Liquidity)
+  if(result.bsl){
+    const bslY=yOf(result.bsl);
+    ctx.strokeStyle='rgba(0,230,118,.35)';ctx.lineWidth=.8*dpr;ctx.setLineDash([4*dpr,4*dpr]);
+    ctx.beginPath();ctx.moveTo(ML,bslY);ctx.lineTo(divX,bslY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(0,230,118,.6)';ctx.font=`bold ${6.5*dpr}px IBM Plex Mono`;ctx.textAlign='left';
+    ctx.fillText('BSL',ML+2,bslY-2);
+  }
+
+  // SSL (Sell Side Liquidity)
+  if(result.ssl){
+    const sslY=yOf(result.ssl);
+    ctx.strokeStyle='rgba(255,23,68,.35)';ctx.lineWidth=.8*dpr;ctx.setLineDash([4*dpr,4*dpr]);
+    ctx.beginPath();ctx.moveTo(ML,sslY);ctx.lineTo(divX,sslY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,23,68,.6)';ctx.font=`bold ${6.5*dpr}px IBM Plex Mono`;ctx.textAlign='left';
+    ctx.fillText('SSL',ML+2,sslY+8*dpr);
+  }
+
+  // IPDA Range High/Low
+  if(result.ipdaHigh&&result.ipdaLow){
+    const iH=yOf(result.ipdaHigh), iL=yOf(result.ipdaLow);
+    ctx.fillStyle='rgba(41,182,246,.04)';
+    ctx.fillRect(ML,iH,divX-ML,iL-iH);
+    ctx.fillStyle='rgba(41,182,246,.4)';ctx.font=`${6*dpr}px IBM Plex Mono`;ctx.textAlign='right';
+    ctx.fillText('IPDA H',divX-2,iH+8*dpr);
+    ctx.fillText('IPDA L',divX-2,iL-2);
+  }
+
+  // Inducement marker
+  if(result.inducement){
+    const indY=yOf(result.inducement.price);
+    const indX=xOf(result.inducement.i);
+    ctx.strokeStyle='rgba(255,152,0,.6)';ctx.lineWidth=.7*dpr;ctx.setLineDash([2*dpr,4*dpr]);
+    ctx.beginPath();ctx.moveTo(indX,indY);ctx.lineTo(Math.min(divX,indX+40*dpr),indY);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,152,0,.8)';ctx.font=`bold ${6.5*dpr}px IBM Plex Mono`;ctx.textAlign='left';
+    ctx.fillText('IND',indX+2,result.inducement.type==='bull'?indY+8*dpr:indY-2);
+  }
 
   // EMAs
   function drawLineArr(arr,color,lw){
@@ -1610,24 +1920,16 @@ function drawAll(){
   ctx.fillStyle='#fff';ctx.font=`${8.5*dpr}px IBM Plex Mono`;ctx.textAlign='left';
   ctx.fillText(ps,W-MR+4,cpY+4*dpr);
 
-  // Time axis (LKT = UTC+5:30)
+  // Time axis (SLST)
   ctx.fillStyle='rgba(36,53,69,.85)';ctx.font=`${7.5*dpr}px IBM Plex Mono`;ctx.textAlign='center';
   const step=Math.max(1,Math.floor(hC/9));
-  const isDaily=activeTF==='D';
-  const is4h=parseInt(activeTF)===240;
   for(let i=0;i<hC;i+=step){
-    const cv=candles[i];if(!cv)continue;
-    const dd=new Date(cv.t);
-    const lktMs=dd.getTime()+330*60000;
-    const lktD=new Date(lktMs);
-    let lbl;
-    if(isDaily){
-      lbl=`${(lktD.getUTCMonth()+1).toString().padStart(2,'0')}/${lktD.getUTCDate().toString().padStart(2,'0')}`;
-    } else if(is4h){
-      lbl=`${lktD.getUTCDate().toString().padStart(2,'0')} ${lktD.getUTCHours().toString().padStart(2,'0')}h`;
-    } else {
-      lbl=`${lktD.getUTCHours().toString().padStart(2,'0')}:${lktD.getUTCMinutes().toString().padStart(2,'0')}`;
-    }
+    const c=candles[i];if(!c)continue;
+    const dd=new Date(c.t);
+    // Convert UTC to SLST (+5:30)
+    const slstMs=dd.getTime()+330*60000;
+    const slstD=new Date(slstMs);
+    const lbl=`${slstD.getUTCHours().toString().padStart(2,'0')}:${slstD.getUTCMinutes().toString().padStart(2,'0')}`;
     ctx.fillText(lbl,xOf(i),MT+CH+18*dpr);
   }
 
@@ -1685,9 +1987,20 @@ function updatePanel(pair,result){
   hero.className='sig-hero '+(result.dir==='BUY'?'sh-buy':result.dir==='SELL'?'sh-sell':'sh-wait');
   document.getElementById('shDir').textContent=result.dir;
   document.getElementById('shSub').textContent=
-    result.dir==='BUY'?`${result.bull}/11 bull factors — Enter BUY`:
-    result.dir==='SELL'?`${result.bear}/11 bear factors — Enter SELL`:
+    result.dir==='BUY'?`${result.bull}/${result.factors.length} bull factors — Enter BUY`:
+    result.dir==='SELL'?`${result.bear}/${result.factors.length} bear factors — Enter SELL`:
     'No clear confluence — stand aside';
+  const gradeEl=document.getElementById('smcGradeEl');
+  if(gradeEl){
+    gradeEl.textContent=result.smcGrade||'D';
+    const gc={A_plus:'var(--green)',A:'var(--green)',B:'var(--gold)',C:'var(--orange)',D:'var(--dim)'};
+    gradeEl.style.color=gc[result.smcGrade?.replace('+','_plus')]||'var(--dim)';
+  }
+  const biasEl=document.getElementById('smcBiasEl');
+  if(biasEl){
+    biasEl.textContent=result.smcBias||'NEUTRAL';
+    biasEl.style.color=result.smcBias==='BULLISH'?'var(--green)':result.smcBias==='BEARISH'?'var(--red)':'var(--dim)';
+  }
 
   const circ=2*Math.PI*24;
   const rf=document.getElementById('ringFill');
@@ -1710,6 +2023,23 @@ function updatePanel(pair,result){
   const slst=getSLSTTime();
   const slstStr=`${slst.getHours().toString().padStart(2,'0')}:${slst.getMinutes().toString().padStart(2,'0')}`;
   const sess=sessionStr();
+  // SMC-specific display
+  const smcInfoEl=document.getElementById('smcInfo');
+  if(smcInfoEl){
+    const seqStr=result.structureSeq.slice(-5).map(s=>s.label).join(' → ');
+    smcInfoEl.innerHTML=`
+      <div class='fc-row'><span class='fc-key'>Structure Seq</span><span class='fc-val a'>${seqStr||'—'}</span></div>
+      <div class='fc-row'><span class='fc-key'>SMC Grade</span><span class='fc-val ${result.smcGrade==='A+'||result.smcGrade==='A'?'b':result.smcGrade==='B'?'a':'s'}'>${result.smcGrade}</span></div>
+      <div class='fc-row'><span class='fc-key'>HTF Bias</span><span class='fc-val ${result.smcBias==='BULLISH'?'b':'s'}'>${result.smcBias}</span></div>
+      <div class='fc-row'><span class='fc-key'>OB Status</span><span class='fc-val c'>${result.inOB?(result.obB?'In Bull OB':'In Bear OB'):'Not in OB'}</span></div>
+      <div class='fc-row'><span class='fc-key'>OTE Zone</span><span class='fc-val ${result.inOTE?'b':result.inOTEBear?'s':''}'>${result.inOTE?'In Bull OTE':result.inOTEBear?'In Bear OTE':'Outside OTE'}</span></div>
+      <div class='fc-row'><span class='fc-key'>BSL Level</span><span class='fc-val a'>${result.bsl?fP(result.bsl,pair.pip):'—'}</span></div>
+      <div class='fc-row'><span class='fc-key'>SSL Level</span><span class='fc-val a'>${result.ssl?fP(result.ssl,pair.pip):'—'}</span></div>
+      <div class='fc-row'><span class='fc-key'>IPDA Mid</span><span class='fc-val c'>${result.ipdaMid?fP(result.ipdaMid,pair.pip):'—'}</span></div>
+      <div class='fc-row'><span class='fc-key'>Inducement</span><span class='fc-val ${result.inducement?'a':''}'>${result.inducement?result.inducement.desc+' @ '+fP(result.inducement.price,pair.pip):'—'}</span></div>
+      <div class='fc-row'><span class='fc-key'>Kill Zone</span><span class='fc-val ${result.isKillzone?'b':''}'>${result.isKillzone?'⚡ ACTIVE':'Inactive'}</span></div>
+    `;
+  }
   document.getElementById('fcInfo').innerHTML=`
     <div class="fc-row"><span class="fc-key">Direction</span><span class="fc-val ${result.dir==='BUY'?'b':result.dir==='SELL'?'s':''}">${result.dir}</span></div>
     <div class="fc-row"><span class="fc-key">RSI</span><span class="fc-val c">${result.rsi.toFixed(1)} ${result.rsi<30?'⚠ Oversold':result.rsi>70?'⚠ Overbought':''}</span></div>
@@ -1907,44 +2237,32 @@ setInterval(renderAllNews,60000);
 //  LOGIN SYSTEM
 // ================================================================
 const _LU='admin', _LP='admin@123';
-
 function loginTick(){
   const el=document.getElementById('loginClock');
   if(!el)return;
   const s=getSLSTTime();
-  el.textContent=s.getHours().toString().padStart(2,'0')+':'+
-    s.getMinutes().toString().padStart(2,'0')+':'+
-    s.getSeconds().toString().padStart(2,'0');
+  el.textContent=s.getHours().toString().padStart(2,'0')+':'+s.getMinutes().toString().padStart(2,'0')+':'+s.getSeconds().toString().padStart(2,'0');
 }
 setInterval(loginTick,1000);loginTick();
-
 function toggleEye(){
   const i=document.getElementById('lPass'),b=document.getElementById('eyeBtn');
-  if(i.type==='password'){i.type='text';b.textContent='🙈';}
-  else{i.type='password';b.textContent='👁';}
+  if(i.type==='password'){i.type='text';b.textContent='🙈';}else{i.type='password';b.textContent='👁';}
 }
-
 function doLogin(){
   const u=document.getElementById('lUser').value.trim();
   const p=document.getElementById('lPass').value;
-  const err=document.getElementById('loginErr');
-  const box=document.getElementById('loginBox');
+  const err=document.getElementById('loginErr'),box=document.getElementById('loginBox');
   if(u===_LU&&p===_LP){
     const ov=document.getElementById('loginOverlay');
-    ov.style.transition='opacity .6s ease';
-    ov.style.opacity='0';
+    ov.style.transition='opacity .6s ease';ov.style.opacity='0';
     setTimeout(function(){ov.classList.add('hidden');appStart();},650);
   } else {
-    err.classList.add('show');
-    box.classList.remove('login-shake');
-    void box.offsetWidth;
-    box.classList.add('login-shake');
+    err.classList.add('show');box.classList.remove('login-shake');
+    void box.offsetWidth;box.classList.add('login-shake');
     document.getElementById('lPass').value='';
     setTimeout(function(){err.classList.remove('show');},2800);
   }
 }
-
-// ── Init (called after login) ──
 async function appStart(){
   await new Promise(r=>setTimeout(r,80));
   resizeCanvas();
@@ -1966,7 +2284,7 @@ async function appStart(){
   // Load real Twelve Data for EUR/USD
   await selectPair('EUR/USD');
 }
-// appStart() is called by doLogin() after successful authentication
+// appStart() triggered by doLogin()
 </script>
 </body>
 </html>
