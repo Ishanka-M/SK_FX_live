@@ -313,35 +313,36 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
 .ntc-dv{color:var(--text);}
 
 /* ── LOGIN OVERLAY ── */
-.login-overlay{position:fixed;inset:0;background:radial-gradient(ellipse at 60% 40%,#060e1e 0%,#03060d 70%);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.login-overlay{position:fixed;inset:0;background:radial-gradient(ellipse at 60% 40%,#060e1e 0%,#03060d 75%);z-index:9999;display:flex;align-items:center;justify-content:center;}
 .login-overlay.hidden{display:none!important;}
 .login-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(17,32,48,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(17,32,48,.5) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;}
 .login-glow{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,.07) 0%,transparent 65%);pointer-events:none;top:50%;left:50%;transform:translate(-50%,-50%);}
 .login-box{position:relative;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:40px 38px 34px;width:420px;max-width:94vw;box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 60px rgba(212,168,67,.04);}
-.login-logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;}
-.login-brand{font-family:'Syncopate',sans-serif;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:6px;text-align:center;}
+.login-brand{font-family:'Syncopate',sans-serif;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:6px;text-align:center;margin-bottom:4px;}
 .login-sub{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);text-align:center;margin-bottom:32px;}
 .lf{margin-bottom:18px;}
 .lf-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:7px;}
 .lf-wrap{position:relative;}
-.lf-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:12px 42px 12px 14px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s;letter-spacing:.5px;}
+.lf-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:12px 44px 12px 14px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s;letter-spacing:.5px;}
 .lf-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,.08);}
 .lf-input::placeholder{color:var(--muted);letter-spacing:0;}
-.lf-icon{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--dim);cursor:pointer;user-select:none;transition:color .15s;}
-.lf-icon:hover{color:var(--text);}
+.lf-icon{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--dim);user-select:none;}
+.lf-icon-btn{cursor:pointer;transition:color .15s;}
+.lf-icon-btn:hover{color:var(--text);}
 .login-btn{width:100%;margin-top:26px;padding:13px;border-radius:6px;background:rgba(212,168,67,.13);border:1px solid var(--gold);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;cursor:pointer;transition:all .2s;text-transform:uppercase;font-weight:600;}
 .login-btn:hover{background:rgba(212,168,67,.25);box-shadow:0 0 24px rgba(212,168,67,.12);}
 .login-btn:active{transform:scale(.98);}
-.login-err{font-size:8px;color:var(--red);text-align:center;margin-top:11px;height:13px;letter-spacing:.5px;opacity:0;transition:opacity .2s;}
+.login-err{font-size:8px;color:var(--red);text-align:center;margin-top:11px;min-height:13px;letter-spacing:.5px;opacity:0;transition:opacity .2s;}
 .login-err.show{opacity:1;}
 .login-div{display:flex;align-items:center;gap:10px;margin:20px 0 0;}
 .login-div::before,.login-div::after{content:'';flex:1;height:1px;background:var(--border);}
 .login-div span{font-size:7px;color:var(--dim);letter-spacing:2px;}
 .login-foot{text-align:center;font-size:7px;color:var(--muted);margin-top:14px;letter-spacing:1px;}
+.lk-badge{position:absolute;top:16px;right:16px;text-align:right;}
+.lk-badge .lk-t{font-size:12px;color:var(--slst);font-weight:600;display:block;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;}
+.lk-badge .lk-l{font-size:7px;color:var(--dim);letter-spacing:1px;}
 @keyframes loginShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-9px);}40%{transform:translateX(9px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
 .login-shake{animation:loginShake .4s ease;}
-.lk-time-badge{position:absolute;top:16px;right:16px;font-size:7px;color:var(--dim);letter-spacing:1px;text-align:right;}
-.lk-time-badge .lk-t{font-size:11px;color:var(--slst);font-weight:600;display:block;}
 </style>
 </head>
 <body>
@@ -351,39 +352,34 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
   <div class="login-grid"></div>
   <div class="login-glow"></div>
   <div class="login-box" id="loginBox">
-    <div class="lk-time-badge">
+    <div class="lk-badge">
       <span class="lk-t" id="loginClock">00:00:00</span>
-      <span>SLST (LKT)</span>
+      <span class="lk-l">LKT (UTC+5:30)</span>
     </div>
     <div class="login-brand">SK·FX</div>
     <div class="login-sub">Live Forecast Terminal · v7</div>
-
     <div class="lf">
       <label class="lf-label" for="lUser">Username</label>
       <div class="lf-wrap">
-        <input class="lf-input" id="lUser" type="text" placeholder="Enter username" autocomplete="username"
-          onkeydown="if(event.key==='Enter')doLogin()">
+        <input class="lf-input" id="lUser" type="text" placeholder="Enter username"
+          autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
         <span class="lf-icon">👤</span>
       </div>
     </div>
-
     <div class="lf">
       <label class="lf-label" for="lPass">Password</label>
       <div class="lf-wrap">
-        <input class="lf-input" id="lPass" type="password" placeholder="Enter password" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter')doLogin()">
-        <span class="lf-icon" id="eyeBtn" onclick="toggleEye()">👁</span>
+        <input class="lf-input" id="lPass" type="password" placeholder="Enter password"
+          autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <span class="lf-icon lf-icon-btn" id="eyeBtn" onclick="toggleEye()">👁</span>
       </div>
     </div>
-
     <button class="login-btn" onclick="doLogin()">⟶ ACCESS TERMINAL</button>
     <div class="login-err" id="loginErr">⚠ Invalid username or password</div>
-
     <div class="login-div"><span>SECURE ACCESS</span></div>
     <div class="login-foot">SK FOREX ANALYTICS · AUTHORIZED USERS ONLY · LKT UTC+5:30</div>
   </div>
 </div>
-
 
 <!-- API key is pre-configured -->
 
@@ -624,7 +620,7 @@ const PAIRS=[
   {sym:'EUR/NOK',pip:.0001,base:11.850, vol:.10,  cat:'Exotic',currencies:['EUR','NOK']},
   {sym:'XAU/USD',pip:.01,  base:2345.0, vol:3.2,  cat:'Exotic',currencies:['XAU','USD']},
   {sym:'XAG/USD',pip:.001, base:27.500, vol:.22,  cat:'Exotic',currencies:['XAG','USD']},
-  // ── Additional Minors ──
+  // Additional Minors
   {sym:'EUR/CAD',pip:.0001,base:1.47800,vol:.0011,cat:'Minor',currencies:['EUR','CAD']},
   {sym:'EUR/NZD',pip:.0001,base:1.80200,vol:.0014,cat:'Minor',currencies:['EUR','NZD']},
   {sym:'GBP/NZD',pip:.0001,base:2.11600,vol:.0018,cat:'Minor',currencies:['GBP','NZD']},
@@ -635,19 +631,16 @@ const PAIRS=[
   {sym:'NZD/CHF',pip:.0001,base:.53700, vol:.0007,cat:'Minor',currencies:['NZD','CHF']},
   {sym:'NZD/CAD',pip:.0001,base:.82500, vol:.0008,cat:'Minor',currencies:['NZD','CAD']},
   {sym:'CAD/CHF',pip:.0001,base:.65400, vol:.0007,cat:'Minor',currencies:['CAD','CHF']},
-  // ── Additional Exotics ──
+  // Additional Exotics
   {sym:'USD/HKD',pip:.0001,base:7.83000,vol:.003,  cat:'Exotic',currencies:['USD','HKD']},
-  {sym:'USD/DKK',pip:.0001,base:6.93000,vol:.009,  cat:'Exotic',currencies:['USD','DKK']},
   {sym:'USD/HUF',pip:.01,  base:362.00, vol:1.20,  cat:'Exotic',currencies:['USD','HUF']},
   {sym:'USD/PLN',pip:.0001,base:4.02000,vol:.012,  cat:'Exotic',currencies:['USD','PLN']},
-  {sym:'USD/CZK',pip:.001, base:22.850, vol:.070,  cat:'Exotic',currencies:['USD','CZK']},
   {sym:'USD/THB',pip:.001, base:35.100, vol:.100,  cat:'Exotic',currencies:['USD','THB']},
   {sym:'USD/INR',pip:.001, base:83.200, vol:.150,  cat:'Exotic',currencies:['USD','INR']},
   {sym:'USD/LKR',pip:.01,  base:323.00, vol:1.50,  cat:'Exotic',currencies:['USD','LKR']},
   {sym:'EUR/TRY',pip:.0001,base:35.200, vol:.35,   cat:'Exotic',currencies:['EUR','TRY']},
   {sym:'GBP/ZAR',pip:.0001,base:23.850, vol:.22,   cat:'Exotic',currencies:['GBP','ZAR']},
   {sym:'XPT/USD',pip:.01,  base:1020.0, vol:2.50,  cat:'Exotic',currencies:['XPT','USD']},
-  {sym:'XPD/USD',pip:.01,  base:1050.0, vol:3.00,  cat:'Exotic',currencies:['XPD','USD']},
 ];
 
 let activePair=PAIRS[0],activeTF='5',activeCat='ALL',searchQ='';
@@ -1032,63 +1025,45 @@ async function tdCandles(pair, count=100){
   }
 }
 
-// ── Simulated candles fallback — session-aware realistic data ──
+// ── Simulated candles fallback — session-aware realistic ──
 function genCandles(price,pair,count=100){
   let p=price;
   const candles=[];
   const tfMin=activeTF==='D'?1440:parseInt(activeTF);
   const ms=tfMin*60*1000;
   const now=Date.now();
-
-  // Generate realistic trend with structure breaks
+  // Trend structure
   const trendDir=(Math.random()>.5?1:-1);
-  const trendStr=Math.random()*.6+.2;
-  let trendPhase=0; // 0=trend,1=consolidation,2=reversal
-
-  // Impulse zones (simulate high-impact candle bursts)
-  const impulseA=Math.floor(count*.3)+Math.floor(Math.random()*10);
-  const impulseB=Math.floor(count*.65)+Math.floor(Math.random()*8);
-  const impulseC=Math.floor(count*.88)+Math.floor(Math.random()*5);
-
+  // Impulse zones
+  const impA=Math.floor(count*.28)+Math.floor(Math.random()*8);
+  const impB=Math.floor(count*.62)+Math.floor(Math.random()*7);
+  const impC=Math.floor(count*.87)+Math.floor(Math.random()*5);
   for(let i=count;i>=0;i--){
     const o=p;
-    const candleTime=new Date(now-i*ms);
-    // Check session at that UTC time for vol modulation
-    const utcH=candleTime.getUTCHours()+candleTime.getUTCMinutes()/60;
-    const inSession=(utcH>=7&&utcH<16)||(utcH>=13&&utcH<21)||(utcH>=0&&utcH<9);
-    const sessMulti=inSession?1.4:.55;
-
-    // Phase logic
-    const progress=1-(i/count);
-    if(progress<.35)trendPhase=0;
-    else if(progress<.55)trendPhase=1; // consolidation
-    else if(progress<.75)trendPhase=0;
-    else trendPhase=2; // late reversal attempt
-
-    // Impulse burst
-    const isImpulse=Math.abs(i-impulseA)<3||Math.abs(i-impulseB)<2||Math.abs(i-impulseC)<2;
-    const impMult=isImpulse?2.8+Math.random():1;
-
-    let v=pair.vol*((.4+Math.random()*.7)*sessMulti*impMult);
-    let bias;
-    if(trendPhase===0)bias=trendDir*.18;
-    else if(trendPhase===1)bias=0;
-    else bias=-trendDir*.12; // reversal
-
-    if(isImpulse)bias=trendDir*.35;
-
+    const ct=new Date(now-i*ms);
+    const utcH=ct.getUTCHours()+ct.getUTCMinutes()/60;
+    // Session volume multiplier (London/NY = high, Asia = medium, off = low)
+    const inLonNY=(utcH>=7&&utcH<16)||(utcH>=13&&utcH<21);
+    const inAsia=(utcH>=0&&utcH<9);
+    const sessM=inLonNY?1.5:inAsia?0.9:0.5;
+    const isImp=Math.abs(i-impA)<3||Math.abs(i-impB)<2||Math.abs(i-impC)<2;
+    const impM=isImp?3.0+Math.random()*.8:1.0;
+    const prog=1-(i/count);
+    // Phase: 0-35% trend, 35-55% consolidation, 55-75% trend, 75-100% late push
+    const phase=prog<.35?0:prog<.55?1:prog<.75?0:2;
+    const phaseBias=phase===0?trendDir*.18:phase===1?0:trendDir*.25;
+    const bias=isImp?trendDir*.4:phaseBias;
+    const v=pair.vol*((0.35+Math.random()*.65)*sessM*impM);
     const dir=Math.random()>(0.5-bias)?1:-1;
-    const body=v*(.25+Math.random()*.6);
-    const wick=v*(.1+Math.random()*.35);
+    const body=v*(0.22+Math.random()*.60);
+    const wick=v*(0.08+Math.random()*.32);
     const cl=o+dir*body;
-
     candles.push({
-      t:candleTime,
-      o,
-      h:Math.max(o,cl)+wick*(isImpulse?.7:1),
-      l:Math.min(o,cl)-wick*(isImpulse?.7:1),
+      t:ct,o,
+      h:Math.max(o,cl)+wick,
+      l:Math.min(o,cl)-wick,
       c:cl,
-      v:Math.round(800+Math.random()*8000)*sessMulti
+      v:Math.round((900+Math.random()*7000)*sessM)
     });
     p=cl;
   }
@@ -1635,16 +1610,24 @@ function drawAll(){
   ctx.fillStyle='#fff';ctx.font=`${8.5*dpr}px IBM Plex Mono`;ctx.textAlign='left';
   ctx.fillText(ps,W-MR+4,cpY+4*dpr);
 
-  // Time axis (SLST)
+  // Time axis (LKT = UTC+5:30)
   ctx.fillStyle='rgba(36,53,69,.85)';ctx.font=`${7.5*dpr}px IBM Plex Mono`;ctx.textAlign='center';
   const step=Math.max(1,Math.floor(hC/9));
+  const isDaily=activeTF==='D';
+  const is4h=parseInt(activeTF)===240;
   for(let i=0;i<hC;i+=step){
-    const c=candles[i];if(!c)continue;
-    const dd=new Date(c.t);
-    // Convert UTC to SLST (+5:30)
-    const slstMs=dd.getTime()+330*60000;
-    const slstD=new Date(slstMs);
-    const lbl=`${slstD.getUTCHours().toString().padStart(2,'0')}:${slstD.getUTCMinutes().toString().padStart(2,'0')}`;
+    const cv=candles[i];if(!cv)continue;
+    const dd=new Date(cv.t);
+    const lktMs=dd.getTime()+330*60000;
+    const lktD=new Date(lktMs);
+    let lbl;
+    if(isDaily){
+      lbl=`${(lktD.getUTCMonth()+1).toString().padStart(2,'0')}/${lktD.getUTCDate().toString().padStart(2,'0')}`;
+    } else if(is4h){
+      lbl=`${lktD.getUTCDate().toString().padStart(2,'0')} ${lktD.getUTCHours().toString().padStart(2,'0')}h`;
+    } else {
+      lbl=`${lktD.getUTCHours().toString().padStart(2,'0')}:${lktD.getUTCMinutes().toString().padStart(2,'0')}`;
+    }
     ctx.fillText(lbl,xOf(i),MT+CH+18*dpr);
   }
 
@@ -1918,28 +1901,6 @@ setInterval(async()=>{
 },30000);
 setInterval(renderAllNews,60000);
 
-// ── Live price poll ──
-let pollTimer=null;
-function startLivePoll(){
-  clearInterval(pollTimer);
-  async function poll(){
-    const q=await tdQuote(activePair);
-    if(q&&cache[activePair.sym]){
-      cache[activePair.sym].price=q.price;
-      cache[activePair.sym].chg=q.chg;
-      const c=cache[activePair.sym].candles;
-      if(c?.length) c[c.length-1].c=q.price;
-      document.getElementById('apSym').textContent=activePair.sym;
-      document.getElementById('apPrice').textContent=fP(q.price,activePair.pip);
-      const el=document.getElementById('apChg');
-      el.textContent=(q.chg>=0?'+':'')+q.chg.toFixed(2)+'%';
-      el.className='ap-chg '+(q.chg>=0?'up':'dn');
-      drawAll();buildPairList();setApiStatus('live');
-    }
-  }
-  poll();
-  pollTimer=setInterval(poll,30000);
-}
 
 
 // ================================================================
@@ -1947,19 +1908,20 @@ function startLivePoll(){
 // ================================================================
 const _LU='admin', _LP='admin@123';
 
-// Live clock on login screen
 function loginTick(){
   const el=document.getElementById('loginClock');
   if(!el)return;
   const s=getSLSTTime();
-  el.textContent=`${s.getHours().toString().padStart(2,'0')}:${s.getMinutes().toString().padStart(2,'0')}:${s.getSeconds().toString().padStart(2,'0')}`;
+  el.textContent=s.getHours().toString().padStart(2,'0')+':'+
+    s.getMinutes().toString().padStart(2,'0')+':'+
+    s.getSeconds().toString().padStart(2,'0');
 }
-setInterval(loginTick,1000); loginTick();
+setInterval(loginTick,1000);loginTick();
 
 function toggleEye(){
   const i=document.getElementById('lPass'),b=document.getElementById('eyeBtn');
-  i.type=i.type==='password'?'text':'password';
-  b.textContent=i.type==='password'?'👁':'🙈';
+  if(i.type==='password'){i.type='text';b.textContent='🙈';}
+  else{i.type='password';b.textContent='👁';}
 }
 
 function doLogin(){
@@ -1967,24 +1929,23 @@ function doLogin(){
   const p=document.getElementById('lPass').value;
   const err=document.getElementById('loginErr');
   const box=document.getElementById('loginBox');
-  if(u===_LU && p===_LP){
+  if(u===_LU&&p===_LP){
     const ov=document.getElementById('loginOverlay');
     ov.style.transition='opacity .6s ease';
     ov.style.opacity='0';
-    setTimeout(()=>{ ov.classList.add('hidden'); appStart(); },620);
+    setTimeout(function(){ov.classList.add('hidden');appStart();},650);
   } else {
     err.classList.add('show');
     box.classList.remove('login-shake');
     void box.offsetWidth;
     box.classList.add('login-shake');
     document.getElementById('lPass').value='';
-    setTimeout(()=>err.classList.remove('show'),2800);
+    setTimeout(function(){err.classList.remove('show');},2800);
   }
 }
 
+// ── Init (called after login) ──
 async function appStart(){
-
-
   await new Promise(r=>setTimeout(r,80));
   resizeCanvas();
 
@@ -2005,6 +1966,7 @@ async function appStart(){
   // Load real Twelve Data for EUR/USD
   await selectPair('EUR/USD');
 }
+// appStart() is called by doLogin() after successful authentication
 </script>
 </body>
 </html>
