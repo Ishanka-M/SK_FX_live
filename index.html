@@ -413,7 +413,7 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
     <div class="rl-bar"><div class="rl-fill rl-ok" id="rlFill" style="width:0%"></div></div>
     <span id="rlTxt">0/8</span>
   </div>
-  <span id="apiKeyMask" style="font-size:7px;color:var(--dim);letter-spacing:1px">KEY: ****fa625</span>
+  <span id="apiKeyMask" style="font-size:7px;color:var(--dim);letter-spacing:1px">KEY #1: ****fa625</span>
   <div class="slst-block">
     <div class="slst-time" id="slstClock">00:00:00</div>
     <div class="slst-label">LKT / SLST</div>
@@ -962,31 +962,97 @@ if(window.ResizeObserver){
 // ================================================================
 //  TWELVE DATA API — Live price + OHLCV candles
 // ================================================================
-const TD_KEY  = '94834d50c0514559ab58523e447fa625';
+// ── Multi-key rotation: auto-switch when limit hit ──
+const TD_KEYS = [
+  '94834d50c0514559ab58523e447fa625',
+  'a72dec0c4c394613bf83899de78f582a',
+  '52d8de2e94a044aba8547b39f9de6e5a',
+  'c4705784b02645d4b3b92ae453cf5eb9',
+  '3b50d89b83f449b0a2f76b0a6a1e48f1'
+];
+let TD_KEY_IDX = 0;
+const TD_KEY_LIMITS = TD_KEYS.map(()=>({ calls:0, resetAt:Date.now()+60000, exhausted:false }));
+
+function getCurrentKey(){ return TD_KEYS[TD_KEY_IDX]; }
+function getCurrentLimit(){ return TD_KEY_LIMITS[TD_KEY_IDX]; }
+
+function rotateKey(){
+  const tried = new Set([TD_KEY_IDX]);
+  for(let i=1;i<=TD_KEYS.length;i++){
+    const next=(TD_KEY_IDX+i)%TD_KEYS.length;
+    const lim=TD_KEY_LIMITS[next];
+    lim._tick && lim._tick();
+    if(!lim.exhausted || Date.now()>=lim.resetAt){
+      lim.exhausted=false; lim.calls=0; lim.resetAt=Date.now()+60000;
+      TD_KEY_IDX=next;
+      updateKeyDisplay();
+      console.log(`[KeyRotate] Switched to key #${TD_KEY_IDX+1} (****${TD_KEYS[TD_KEY_IDX].slice(-4)})`);
+      return true;
+    }
+  }
+  console.warn('[KeyRotate] All keys exhausted!');
+  return false;
+}
+
+function updateKeyDisplay(){
+  const el=document.getElementById('apiKeyMask');
+  if(el) el.textContent=`KEY #${TD_KEY_IDX+1}: ****${getCurrentKey().slice(-4)}`;
+}
+
 const TD_BASE = 'https://api.twelvedata.com';
 
-// ── Smart rate limiter: free plan = 8 calls/min ──
+// ── Smart rate limiter: free plan = 8 calls/min, auto-rotates keys ──
 const RL = {
-  calls: 0, resetAt: Date.now()+60000, max: 8, queue: [], busy: false,
-  _tick(){ const n=Date.now(); if(n>=this.resetAt){this.calls=0;this.resetAt=n+60000;} updateRLBar(); },
-  canCall(){ this._tick(); return this.calls<this.max; },
+  queue: [], busy: false,
+  get calls(){ return getCurrentLimit().calls; },
+  get max(){ return 8; },
+  get resetAt(){ return getCurrentLimit().resetAt; },
+  _tick(){
+    const lim=getCurrentLimit();
+    const n=Date.now();
+    if(n>=lim.resetAt){ lim.calls=0; lim.resetAt=n+60000; lim.exhausted=false; }
+    updateRLBar();
+  },
+  canCall(){ this._tick(); return getCurrentLimit().calls < this.max; },
   async fetch(url){
     return new Promise((res,rej)=>{ this.queue.push({url,res,rej}); this._drain(); });
+  },
+  _buildUrl(url){
+    // Replace apikey param with current key
+    return url.replace(/apikey=[^&]+/, `apikey=${getCurrentKey()}`);
   },
   async _drain(){
     if(this.busy)return; this.busy=true;
     while(this.queue.length){
       this._tick();
-      if(this.calls>=this.max){
-        await new Promise(r=>setTimeout(r, Math.max(0,this.resetAt-Date.now())+300));
+      const lim=getCurrentLimit();
+      if(lim.calls>=this.max){
+        lim.exhausted=true;
+        const rotated=rotateKey();
+        if(!rotated){
+          // All exhausted, wait for reset
+          await new Promise(r=>setTimeout(r, Math.max(0,lim.resetAt-Date.now())+300));
+          // Reset all keys
+          TD_KEY_LIMITS.forEach(l=>{ l.calls=0; l.exhausted=false; l.resetAt=Date.now()+60000; });
+          TD_KEY_IDX=0; updateKeyDisplay();
+        }
         this._tick();
       }
       const job=this.queue.shift();
-      this.calls++; updateRLBar();
+      getCurrentLimit().calls++; updateRLBar();
       try{
-        const r=await fetch(job.url);
+        const r=await fetch(this._buildUrl(job.url));
         const d=await r.json();
-        job.res(d);
+        // Check for rate limit error in response
+        if(d.code===429 || (d.status==='error' && d.message && d.message.toLowerCase().includes('limit'))){
+          getCurrentLimit().exhausted=true;
+          getCurrentLimit().calls=this.max;
+          rotateKey();
+          // Re-queue this job with new key
+          this.queue.unshift(job);
+        } else {
+          job.res(d);
+        }
       }catch(e){ job.rej(e); }
       await new Promise(r=>setTimeout(r,180));
     }
@@ -995,13 +1061,14 @@ const RL = {
 };
 
 function updateRLBar(){
-  const pct=Math.min(100,(RL.calls/RL.max)*100);
+  const lim=getCurrentLimit();
+  const pct=Math.min(100,(lim.calls/8)*100);
   const fill=document.getElementById('rlFill');
   const txt=document.getElementById('rlTxt');
   if(!fill||!txt)return;
   fill.style.width=pct+'%';
   fill.className='rl-fill '+(pct>=100?'rl-full':pct>=75?'rl-warn':'rl-ok');
-  txt.textContent=`${RL.calls}/${RL.max}`;
+  txt.textContent=`K${TD_KEY_IDX+1}: ${lim.calls}/8`;
 }
 
 function setApiStatus(mode){
@@ -1023,7 +1090,7 @@ function tdInterval(tf){
 // ── Fetch real-time quote ──
 async function tdQuote(pair){
   try{
-    const url=`${TD_BASE}/quote?symbol=${encodeURIComponent(pair.sym)}&apikey=${TD_KEY}`;
+    const url=`${TD_BASE}/quote?symbol=${encodeURIComponent(pair.sym)}&apikey=${getCurrentKey()}`;
     const d=await RL.fetch(url);
     if(d.status==='error'||d.code)throw new Error(d.message||'quote error');
     const price=parseFloat(d.close);
@@ -1039,7 +1106,7 @@ async function tdQuote(pair){
 async function tdCandles(pair, count=100){
   try{
     const iv=tdInterval(activeTF);
-    const url=`${TD_BASE}/time_series?symbol=${encodeURIComponent(pair.sym)}&interval=${iv}&outputsize=${count}&apikey=${TD_KEY}`;
+    const url=`${TD_BASE}/time_series?symbol=${encodeURIComponent(pair.sym)}&interval=${iv}&outputsize=${count}&apikey=${getCurrentKey()}`;
     const d=await RL.fetch(url);
     if(d.status==='error'||!d.values)throw new Error(d.message||'no data');
     // TD returns newest-first → reverse to oldest-first
