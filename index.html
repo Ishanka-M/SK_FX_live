@@ -100,7 +100,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .news-none{background:transparent;}
 
 /* ── CENTER CHART ── */
-.chart-wrap{position:relative;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;min-height:0;flex:1;}
+.chart-wrap{position:relative;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;min-height:0;}
 .chart-hdr{height:28px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:10px;flex-shrink:0;font-size:9px;}
 .ch-pair{color:var(--gold2);font-weight:700;letter-spacing:1px;font-size:11px;}
 .ch-tf{color:var(--dim);}
@@ -114,7 +114,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .ms-fvg{background:rgba(212,168,67,.12);color:var(--gold);}
 .ms-news-h{background:rgba(255,23,68,.2);color:#ff6b6b;border:1px solid rgba(255,23,68,.3);}
 .ms-news-m{background:rgba(255,152,0,.15);color:var(--orange);border:1px solid rgba(255,152,0,.3);}
-canvas#chart{flex:1;display:block;width:100%!important;height:100%!important;min-height:300px;}
+canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
 
 /* ── RIGHT PANEL ── */
 .right-panel{background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
@@ -312,55 +312,6 @@ canvas#chart{flex:1;display:block;width:100%!important;height:100%!important;min
 .ntc-d{display:flex;gap:3px;}
 .ntc-dv{color:var(--text);}
 
-/* ── ELLIOTT WAVE PANEL ── */
-.ew-panel{padding:8px 12px;border-bottom:1px solid var(--border);}
-.ew-title{font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
-.ew-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:1px;margin-bottom:5px;}
-.ew-bull{background:rgba(0,230,118,.12);border:1px solid rgba(0,230,118,.3);color:var(--green);}
-.ew-bear{background:rgba(255,23,68,.12);border:1px solid rgba(255,23,68,.3);color:var(--red);}
-.ew-neutral{background:rgba(36,53,69,.4);border:1px solid var(--border2);color:var(--dim);}
-.ew-wave-row{display:flex;gap:4px;align-items:center;margin-bottom:5px;flex-wrap:wrap;}
-.ew-wave{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'Syncopate',sans-serif;flex-shrink:0;}
-.ew-w-active{background:rgba(212,168,67,.25);border:1px solid var(--gold);color:var(--gold2);box-shadow:0 0 8px rgba(212,168,67,.2);}
-.ew-w-done{background:rgba(36,53,69,.4);border:1px solid var(--border2);color:var(--dim);}
-.ew-w-next{background:rgba(41,182,246,.08);border:1px dashed rgba(41,182,246,.3);color:rgba(41,182,246,.5);}
-.ew-arrow{color:var(--dim);font-size:10px;}
-.ew-info{font-size:8px;color:var(--text);line-height:1.5;padding:4px 6px;background:rgba(3,6,13,.4);border-radius:3px;border:1px solid var(--border);}
-.ew-target{display:flex;justify-content:space-between;font-size:8px;padding:2px 0;}
-.ew-tk{color:var(--dim);}
-.ew-tv{color:var(--gold2);font-weight:600;}
-
-/* ── MTF PANEL ── */
-.mtf-panel{padding:8px 12px;border-bottom:1px solid var(--border);}
-.mtf-title{font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
-.mtf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;}
-.mtf-cell{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 3px;text-align:center;cursor:pointer;transition:all .15s;}
-.mtf-cell:hover{border-color:var(--gold);}
-.mtf-tf{font-size:7px;letter-spacing:1px;color:var(--dim);margin-bottom:2px;}
-.mtf-dir{font-size:9px;font-weight:700;}
-.mtf-str{font-size:7px;margin-top:1px;}
-.mtf-bull .mtf-dir{color:var(--green);}
-.mtf-sell .mtf-dir{color:var(--red);}
-.mtf-wait .mtf-dir{color:var(--dim);}
-.mtf-bull .mtf-str{color:rgba(0,230,118,.6);}
-.mtf-sell .mtf-str{color:rgba(255,23,68,.6);}
-.mtf-wait .mtf-str{color:var(--muted);}
-.mtf-active{border-color:var(--gold)!important;}
-.mtf-align{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:5px;font-size:7px;letter-spacing:1px;padding:3px 6px;border-radius:10px;}
-.mtf-aligned-bull{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);color:var(--green);}
-.mtf-aligned-bear{background:rgba(255,23,68,.08);border:1px solid rgba(255,23,68,.25);color:var(--red);}
-.mtf-mixed{background:rgba(36,53,69,.4);border:1px solid var(--border2);color:var(--dim);}
-
-/* ── SIGNAL FILTER ── */
-.filter-bar{padding:5px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
-.filter-label{font-size:7px;letter-spacing:1px;color:var(--dim);}
-.filter-toggle{display:flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;font-size:8px;letter-spacing:.5px;transition:all .2s;}
-.filter-toggle.active-f{background:rgba(212,168,67,.12);border-color:var(--gold);color:var(--gold);}
-.filter-toggle:not(.active-f){color:var(--dim);}
-.filter-dot{width:5px;height:5px;border-radius:50%;}
-.active-f .filter-dot{background:var(--gold);animation:blink 1.5s infinite;}
-:not(.active-f) .filter-dot{background:var(--muted);}
-
 /* ── FORECAST PULSE DOT (CSS-animated, replaces Date.now() canvas pulse) ── */
 .forecast-dot{
   position:absolute;pointer-events:none;display:none;
@@ -407,6 +358,45 @@ canvas#chart{flex:1;display:block;width:100%!important;height:100%!important;min
 .lk-badge .lk-l{font-size:7px;color:var(--dim);letter-spacing:1px;}
 @keyframes loginShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-9px);}40%{transform:translateX(9px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
 .login-shake{animation:loginShake .4s ease;}
+/* ── ELLIOTT WAVE ── */
+.ew-sec{padding:8px 12px;border-bottom:1px solid var(--border);}
+.ew-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:1px;margin-bottom:5px;}
+.ew-bull{background:rgba(0,230,118,.12);border:1px solid rgba(0,230,118,.3);color:var(--green);}
+.ew-bear{background:rgba(255,23,68,.12);border:1px solid rgba(255,23,68,.3);color:var(--red);}
+.ew-neut{background:rgba(36,53,69,.4);border:1px solid var(--border2);color:var(--dim);}
+.ew-waves{display:flex;align-items:center;gap:3px;margin-bottom:6px;}
+.ew-w{width:22px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'Syncopate',sans-serif;}
+.ew-done{background:rgba(36,53,69,.5);border:1px solid var(--border2);color:var(--dim);}
+.ew-active{background:rgba(212,168,67,.2);border:1px solid var(--gold);color:var(--gold2);box-shadow:0 0 6px rgba(212,168,67,.25);}
+.ew-next{background:transparent;border:1px dashed rgba(41,182,246,.3);color:rgba(41,182,246,.4);}
+.ew-sep{color:var(--border2);font-size:9px;margin:0 1px;}
+.ew-desc{font-size:8px;color:var(--text);line-height:1.55;padding:4px 6px;background:rgba(3,6,13,.5);border-radius:3px;border:1px solid var(--border);margin-bottom:4px;}
+.ew-tgt{display:flex;justify-content:space-between;font-size:8px;padding:2px 0;border-bottom:1px solid rgba(17,32,48,.5);}
+.ew-tgt:last-child{border-bottom:none;}
+.ew-tk{color:var(--dim);}
+.ew-tv{color:var(--gold2);font-weight:600;}
+/* ── MULTI-TIMEFRAME ── */
+.mtf-sec{padding:8px 12px;border-bottom:1px solid var(--border);}
+.mtf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-bottom:5px;}
+.mtf-cell{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 2px;text-align:center;cursor:pointer;transition:border-color .15s;}
+.mtf-cell:hover,.mtf-cur{border-color:var(--gold)!important;}
+.mtf-tf-lbl{font-size:6px;letter-spacing:.5px;color:var(--dim);margin-bottom:1px;}
+.mtf-d{font-size:9px;font-weight:700;}
+.mtf-s{font-size:7px;margin-top:1px;}
+.mtf-b .mtf-d{color:var(--green);} .mtf-b .mtf-s{color:rgba(0,230,118,.6);}
+.mtf-s2 .mtf-d{color:var(--red);} .mtf-s2 .mtf-s{color:rgba(255,23,68,.6);}
+.mtf-w .mtf-d{color:var(--dim);} .mtf-w .mtf-s{color:var(--muted);}
+.mtf-align{display:flex;align-items:center;justify-content:center;font-size:7px;letter-spacing:.5px;padding:3px 6px;border-radius:10px;text-align:center;}
+.mtf-ab{background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.2);color:var(--green);}
+.mtf-as{background:rgba(255,23,68,.07);border:1px solid rgba(255,23,68,.2);color:var(--red);}
+.mtf-am{background:rgba(36,53,69,.4);border:1px solid var(--border2);color:var(--dim);}
+/* ── FILTER BAR ── */
+.flt-bar{padding:4px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px;}
+.flt-lbl{font-size:7px;letter-spacing:.5px;color:var(--dim);}
+.flt-btn{display:flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:.5px;color:var(--dim);transition:all .2s;}
+.flt-btn.flt-on{background:rgba(212,168,67,.1);border-color:var(--gold);color:var(--gold);}
+.flt-dot{width:4px;height:4px;border-radius:50%;background:var(--muted);}
+.flt-on .flt-dot{background:var(--gold);animation:blink 1.5s infinite;}
 </style>
 </head>
 <body>
@@ -418,7 +408,7 @@ canvas#chart{flex:1;display:block;width:100%!important;height:100%!important;min
   <div class="login-box" id="loginBox">
     <div class="lk-badge"><span class="lk-t" id="loginClock">00:00:00</span><span class="lk-l">LKT (UTC+5:30)</span></div>
     <div class="login-brand">SK·FX</div>
-    <div class="login-sub">SMC Terminal · v9 · EW + MTF</div>
+    <div class="login-sub">SMC Terminal · v9 · EW+MTF</div>
     <div class="lf"><label class="lf-label" for="lUser">Username</label>
       <div class="lf-wrap"><input class="lf-input" id="lUser" type="text" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
       <span class="lf-icon">👤</span></div></div>
@@ -428,7 +418,7 @@ canvas#chart{flex:1;display:block;width:100%!important;height:100%!important;min
     <button class="login-btn" onclick="doLogin()">⟶ ACCESS TERMINAL</button>
     <div class="login-err" id="loginErr">⚠ Invalid username or password</div>
     <div class="login-div"><span>SECURE ACCESS</span></div>
-    <div class="login-foot">SK FOREX ANALYTICS · SMC ENGINE v9 · EW+MTF · LKT UTC+5:30</div>
+    <div class="login-foot">SK FOREX ANALYTICS · SMC ENGINE v9 · LKT UTC+5:30</div>
   </div>
 </div>
 
@@ -561,19 +551,25 @@ canvas#chart{flex:1;display:block;width:100%!important;height:100%!important;min
       <div id="newsWarningZone"></div>
 
       <!-- Multi-Timeframe Analysis -->
-      <div class="mtf-panel">
-        <div class="mtf-title">⏱ Multi-Timeframe Analysis</div>
-        <div class="mtf-grid" id="mtfGrid"></div>
-        <div class="mtf-align mtf-mixed" id="mtfAlignBadge">⟳ Analyzing timeframes...</div>
+      <div class="mtf-sec">
+        <div class="sec-t">⏱ Multi-Timeframe Analysis</div>
+        <div class="mtf-grid" id="mtfGrid">
+          <div class="mtf-cell mtf-w"><div class="mtf-tf-lbl">5M</div><div class="mtf-d">—</div><div class="mtf-s">—</div></div>
+          <div class="mtf-cell mtf-w"><div class="mtf-tf-lbl">15M</div><div class="mtf-d">—</div><div class="mtf-s">—</div></div>
+          <div class="mtf-cell mtf-w"><div class="mtf-tf-lbl">1H</div><div class="mtf-d">—</div><div class="mtf-s">—</div></div>
+          <div class="mtf-cell mtf-w"><div class="mtf-tf-lbl">4H</div><div class="mtf-d">—</div><div class="mtf-s">—</div></div>
+          <div class="mtf-cell mtf-w"><div class="mtf-tf-lbl">D</div><div class="mtf-d">—</div><div class="mtf-s">—</div></div>
+        </div>
+        <div class="mtf-align mtf-am" id="mtfAlignEl">⟳ Analyzing...</div>
       </div>
 
-      <!-- Elliott Wave Panel -->
-      <div class="ew-panel">
-        <div class="ew-title">〜 Elliott Wave Structure</div>
-        <div id="ewBadgeEl"></div>
-        <div class="ew-wave-row" id="ewWaveRow"></div>
-        <div class="ew-info" id="ewInfo"></div>
-        <div style="margin-top:5px;" id="ewTargets"></div>
+      <!-- Elliott Wave -->
+      <div class="ew-sec">
+        <div class="sec-t">〜 Elliott Wave Structure</div>
+        <div id="ewBadge"></div>
+        <div class="ew-waves" id="ewWaves"></div>
+        <div class="ew-desc" id="ewDesc">— select a pair to analyze —</div>
+        <div id="ewTgts"></div>
       </div>
 
       <!-- Trade Levels (3 TPs) -->
@@ -646,16 +642,10 @@ canvas#chart{flex:1;display:block;width:100%!important;height:100%!important;min
         <div class="nh-title">⚡ Upcoming Setups</div>
         <button class="nh-scan" onclick="scanAllPairs()">Scan All</button>
       </div>
-      <div class="filter-bar">
-        <span class="filter-label">FILTER:</span>
-        <div class="filter-toggle active-f" id="filterBtn" onclick="toggleSignalFilter()">
-          <div class="filter-dot"></div>
-          <span id="filterBtnTxt">50%+ Only</span>
-        </div>
-        <div class="filter-toggle" id="mtfFilterBtn" onclick="toggleMtfFilter()">
-          <div class="filter-dot"></div>
-          <span id="mtfFilterTxt">MTF Aligned</span>
-        </div>
+      <div class="flt-bar">
+        <span class="flt-lbl">FILTER:</span>
+        <div class="flt-btn flt-on" id="flt50" onclick="toggle50Filter()"><div class="flt-dot"></div><span id="flt50txt">50%+ Only</span></div>
+        <div class="flt-btn" id="fltMtf" onclick="toggleMtfFilter()"><div class="flt-dot"></div><span>MTF Aligned</span></div>
       </div>
       <div id="notifList">
         <div class="empty-notif"><div style="font-size:22px">📡</div><div>Click "Scan All" to find upcoming setups</div></div>
@@ -1021,10 +1011,10 @@ function renderAllNews(){
 function resizeCanvas(){
   const wrap=canvas.parentElement;
   const dpr=window.devicePixelRatio||1;
-  const W=wrap.clientWidth||wrap.offsetWidth||800;
-  const H=canvas.offsetHeight||canvas.clientHeight||wrap.clientHeight-28||400;
-  if(W<10||H<10)return;
-  if(canvas.width===W*dpr&&canvas.height===H*dpr)return; // no change needed
+  const W=wrap.clientWidth;
+  // canvas flex:1 so get its rendered height directly
+  const H=canvas.offsetHeight||wrap.clientHeight-28;
+  if(W<1||H<1)return;
   canvas.width=W*dpr;canvas.height=H*dpr;
   canvas.style.width=W+'px';canvas.style.height=H+'px';
   if(cache[activePair.sym])markDirty();
@@ -1927,39 +1917,40 @@ function drawAll(){
     ctx.fillStyle=col;ctx.fillRect(x-barW/2,bTop,barW,bH);
   });
 
-  // ── Elliott Wave Canvas Overlay ──
-  const ewDraw = elliottWaveAnalyze(candles, result, activePair);
-  if(ewDraw.wave > 0 && result.recentSwH && result.recentSwH.length && result.recentSwL && result.recentSwL.length) {
-    const allEwSwings = [
-      ...result.recentSwH.map(s=>({...s,type:'H'})),
-      ...result.recentSwL.map(s=>({...s,type:'L'}))
-    ].sort((a,b)=>a.i-b.i).slice(-5);
-    let wLabel = Math.max(1, ewDraw.wave - allEwSwings.length + 1);
-    // Connect wave points
-    if(allEwSwings.length >= 2){
+
+  // ── Elliott Wave Canvas Labels ──
+  {
+    const _swAll = [
+      ...(result.recentSwH||[]).map(s=>({...s,t:'H'})),
+      ...(result.recentSwL||[]).map(s=>({...s,t:'L'}))
+    ].sort((a,b)=>a.i-b.i).slice(-6);
+    if(_swAll.length>=2){
+      // Draw connecting wave line
       ctx.beginPath();
-      ctx.strokeStyle='rgba(212,168,67,.22)';
+      ctx.strokeStyle='rgba(212,168,67,.2)';
       ctx.lineWidth=0.8*dpr;
       ctx.setLineDash([4*dpr,3*dpr]);
-      allEwSwings.forEach((sw,i)=>{
+      _swAll.forEach((sw,i)=>{
         const x=xOf(sw.i),y=yOf(sw.price);
         i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
       });
-      ctx.stroke();ctx.setLineDash([]);
+      ctx.stroke(); ctx.setLineDash([]);
+      // Draw W labels
+      let _wn = Math.max(1, 6 - _swAll.length);
+      _swAll.forEach((sw,idx)=>{
+        const x=xOf(sw.i), y=yOf(sw.price);
+        const isLast = idx===_swAll.length-1;
+        const offY = sw.t==='H' ? -18*dpr : 18*dpr;
+        const lbl = 'W'+Math.min(_wn,5);
+        ctx.fillStyle = isLast?'rgba(212,168,67,.18)':'rgba(212,168,67,.07)';
+        ctx.fillRect(x-11*dpr, y+offY-8*dpr, 22*dpr, 12*dpr);
+        ctx.fillStyle = isLast?'rgba(212,168,67,.95)':'rgba(212,168,67,.45)';
+        ctx.font = `bold ${(isLast?9:7.5)*dpr}px IBM Plex Mono`;
+        ctx.textAlign='center';
+        ctx.fillText(lbl, x, y+offY+2*dpr);
+        _wn++;
+      });
     }
-    allEwSwings.forEach((sw,idx)=>{
-      const x=xOf(sw.i),y=yOf(sw.price);
-      const isActive=idx===allEwSwings.length-1;
-      const lbl=`W${Math.min(wLabel,5)}`;
-      const offY=sw.type==='H'?-19*dpr:18*dpr;
-      ctx.fillStyle=isActive?'rgba(212,168,67,.18)':'rgba(212,168,67,.07)';
-      ctx.fillRect(x-12*dpr,y+offY-9*dpr,24*dpr,13*dpr);
-      ctx.fillStyle=isActive?'rgba(212,168,67,.95)':'rgba(212,168,67,.5)';
-      ctx.font=`bold ${(isActive?9:7.5)*dpr}px IBM Plex Mono`;
-      ctx.textAlign='center';
-      ctx.fillText(lbl,x,y+offY+1.5*dpr);
-      wLabel++;
-    });
   }
 
   // BOS
@@ -2159,7 +2150,7 @@ function drawAll(){
     {c:'rgba(0,230,118,.5)',l:'OB'},
     {c:'rgba(179,157,219,.6)',l:'SwH/L'},
     {c:'rgba(255,152,0,.6)',l:'Sweep'},
-    {c:'rgba(212,168,67,.7)',l:'EW Wave'},
+    {c:'rgba(212,168,67,.7)',l:'EW'},
     {c:result.dir==='BUY'?'#00e676':result.dir==='SELL'?'#ff1744':'#445560',l:'Forecast'},
   ];
   let lx=ML+6;
@@ -2231,347 +2222,233 @@ function startAnim(){
   rafId = requestAnimationFrame(frame);
 }
 
+
 // ================================================================
-//  ELLIOTT WAVE ENGINE — Full Impulsive + Corrective Detection
-//  Wave 1-5 Impulsive, ABC Corrective, Fibonacci targets
+//  ELLIOTT WAVE ENGINE
 // ================================================================
-function elliottWaveAnalyze(candles, result, pair) {
+function ewAnalyze(candles, result, pair) {
   const n = candles.length;
-  if (n < 30) return { wave: 0, phase: 'UNKNOWN', direction: 'neutral', targets: [], info: 'Insufficient data' };
-
-  const cls = candles.map(c => c.c);
-  const his = candles.map(c => c.h);
-  const los = candles.map(c => c.l);
-
-  // Use swing points already computed in result
-  const swHs = result.recentSwH || [];
-  const swLs = result.recentSwL || [];
-
-  if (swHs.length < 2 && swLs.length < 2) {
-    return { wave: 0, phase: 'FORMING', direction: 'neutral', targets: [], info: 'Building wave structure...' };
-  }
-
+  if (n < 25) return { wave:1, phase:'FORMING', dir:'neut', targets:[], desc:'Insufficient data' };
   const atr = result.atr || pair.vol;
   const price = result.price;
-  const smcBias = result.smcBias;
+  const bias = result.smcBias;
+  const swHs = result.recentSwH || [];
+  const swLs = result.recentSwL || [];
+  const fP2 = (v) => { if(!v) return '—'; const d=pair.pip<.001?5:pair.pip<.1?3:2; return v.toFixed(d); };
 
-  // ── Fibonacci ratios for wave targets ──
-  const FIB_W2 = 0.618;  // Wave 2 retraces 61.8% of Wave 1
-  const FIB_W3 = 1.618;  // Wave 3 extends 161.8% of Wave 1
-  const FIB_W4 = 0.382;  // Wave 4 retraces 38.2% of Wave 3
-  const FIB_W5 = 1.000;  // Wave 5 = Wave 1 extension
-
-  // Combine and sort all swings by index
-  const allSwings = [
-    ...swHs.map(s => ({ ...s, type: 'H' })),
-    ...swLs.map(s => ({ ...s, type: 'L' }))
-  ].sort((a, b) => a.i - b.i);
-
-  if (allSwings.length < 4) {
-    return { wave: 0, phase: 'FORMING', direction: 'neutral', targets: [], info: 'Building wave structure — need more swing points' };
+  if (swHs.length < 2 || swLs.length < 2) {
+    return { wave:1, phase:'FORMING', dir: bias==='BULLISH'?'bull':bias==='BEARISH'?'bear':'neut',
+      targets:[], desc:'Building structure — need more swing points' };
   }
 
-  // Try to identify wave pattern from last 5+ swings
-  const recent = allSwings.slice(-6);
-  let waveNum = 0, wavePhase = 'UNKNOWN', waveDir = 'neutral';
-  let targets = [];
-  let desc = '';
+  // Merge + sort swings
+  const all = [
+    ...swHs.map(s=>({...s,t:'H'})),
+    ...swLs.map(s=>({...s,t:'L'}))
+  ].sort((a,b)=>a.i-b.i);
 
-  // Check for BULLISH impulse wave (uptrend)
-  if (smcBias === 'BULLISH' && recent.length >= 4) {
-    const pts = recent;
-    // Find lowest point as potential Wave 1 start
-    const baseIdx = pts.findIndex(p => p.type === 'L');
-    if (baseIdx >= 0 && baseIdx + 2 < pts.length) {
-      const wave1Lo = pts[baseIdx].price;
-      const wave1Hi = pts[baseIdx + 1] ? (pts[baseIdx + 1].type === 'H' ? pts[baseIdx + 1].price : null) : null;
-      const wave2Lo = pts[baseIdx + 2] ? (pts[baseIdx + 2].type === 'L' ? pts[baseIdx + 2].price : null) : null;
+  let wave=1, phase='FORMING', dir='neut', targets=[], desc='';
 
-      if (wave1Hi && wave2Lo) {
-        const w1Range = wave1Hi - wave1Lo;
-        const retrace = (wave1Hi - wave2Lo) / w1Range;
-
-        if (retrace >= 0.382 && retrace <= 0.786) {
-          // Valid Wave 2 — now determine current wave
-          const w3Target = wave1Lo + w1Range * (1 + FIB_W3);
-          const w4Target = wave1Lo + w1Range * (1 + FIB_W3 - FIB_W3 * FIB_W4);
-          const w5Target = wave1Lo + w1Range * (1 + FIB_W3 + FIB_W5);
-
-          // Determine current wave number based on price position
-          if (price > wave2Lo && price < wave1Hi * 1.02) {
-            waveNum = 3; wavePhase = 'IMPULSE'; waveDir = 'bull';
-            desc = `Wave 3 active — strongest wave! Price should extend to ${fP(w3Target, pair.pip)}`;
-            targets = [
-              { label: 'W3 Target (161.8%)', val: fP(w3Target, pair.pip) },
-              { label: 'W4 Pullback (38.2%)', val: fP(w4Target, pair.pip) },
-              { label: 'W5 Extension', val: fP(w5Target, pair.pip) }
-            ];
-          } else if (price > wave1Hi) {
-            waveNum = 3; wavePhase = 'IMPULSE'; waveDir = 'bull';
-            desc = `Wave 3 extending — momentum phase! Watch for W4 pullback around ${fP(w4Target, pair.pip)}`;
-            targets = [
-              { label: 'W3 Target (161.8%)', val: fP(w3Target, pair.pip) },
-              { label: 'W4 Pullback (38.2%)', val: fP(w4Target, pair.pip) },
-              { label: 'W5 Extension', val: fP(w5Target, pair.pip) }
-            ];
+  if (bias === 'BULLISH' && all.length >= 4) {
+    const lows  = all.filter(s=>s.t==='L').slice(-3);
+    const highs = all.filter(s=>s.t==='H').slice(-3);
+    if (lows.length >= 2 && highs.length >= 1) {
+      const w1lo = lows[0].price, w1hi = highs[0].price;
+      const w2lo = lows[1] ? lows[1].price : null;
+      if (w2lo) {
+        const w1range = w1hi - w1lo;
+        const retrace = w1range > 0 ? (w1hi - w2lo) / w1range : 0;
+        if (retrace >= 0.3 && retrace <= 0.8) {
+          const w3t = w1lo + w1range * 2.618;
+          const w4t = w1lo + w1range * (2.618 - 2.618*0.382);
+          const w5t = w1lo + w1range * 3.618;
+          if (price <= w1hi * 1.003 && price >= w2lo) {
+            wave=2; phase='CORRECTIVE'; dir='bull';
+            desc='Wave 2 pullback ('+Math.round(retrace*100)+'% retrace) — BUY zone before Wave 3 impulse';
+            targets=[{k:'W3 Target (161.8%)',v:fP2(w3t)},{k:'W4 Pullback',v:fP2(w4t)},{k:'W5 Final',v:fP2(w5t)}];
+          } else if (price > w1hi) {
+            wave=3; phase='IMPULSE'; dir='bull';
+            desc='Wave 3 — strongest impulse wave! Ride momentum. Watch W4 pullback at '+fP2(w4t);
+            targets=[{k:'W3 Target (161.8%)',v:fP2(w3t)},{k:'W4 Pullback',v:fP2(w4t)},{k:'W5 Final',v:fP2(w5t)}];
           } else {
-            waveNum = 2; wavePhase = 'CORRECTIVE'; waveDir = 'bull';
-            desc = `Wave 2 correction (${(retrace * 100).toFixed(0)}%) — buy zone. W3 targets ${fP(w3Target, pair.pip)}`;
-            targets = [
-              { label: 'W3 Target (161.8%)', val: fP(w3Target, pair.pip) },
-              { label: 'W5 Final', val: fP(w5Target, pair.pip) }
-            ];
+            wave=1; phase='FORMING'; dir='bull';
+            desc='Wave 1 forming — early bullish impulse. Wait for Wave 2 pullback to enter';
+            targets=[{k:'W3 Target',v:fP2(w3t)}];
           }
+        } else {
+          wave=4; phase='CORRECTIVE'; dir='bull';
+          desc='Wave 4 / ABC correction in progress — await completion before Wave 5';
+          targets=[{k:'Wave 5 Target',v:fP2(w1lo + w1range*3.618)}];
         }
       }
     }
-  }
-
-  // Check for BEARISH impulse wave (downtrend)
-  if (smcBias === 'BEARISH' && recent.length >= 4 && waveNum === 0) {
-    const pts = recent;
-    const baseIdx = pts.findIndex(p => p.type === 'H');
-    if (baseIdx >= 0 && baseIdx + 2 < pts.length) {
-      const wave1Hi = pts[baseIdx].price;
-      const wave1Lo = pts[baseIdx + 1] ? (pts[baseIdx + 1].type === 'L' ? pts[baseIdx + 1].price : null) : null;
-      const wave2Hi = pts[baseIdx + 2] ? (pts[baseIdx + 2].type === 'H' ? pts[baseIdx + 2].price : null) : null;
-
-      if (wave1Lo && wave2Hi) {
-        const w1Range = wave1Hi - wave1Lo;
-        const retrace = (wave2Hi - wave1Lo) / w1Range;
-
-        if (retrace >= 0.382 && retrace <= 0.786) {
-          const w3Target = wave1Hi - w1Range * (1 + FIB_W3);
-          const w4Target = wave1Hi - w1Range * (1 + FIB_W3 - FIB_W3 * FIB_W4);
-          const w5Target = wave1Hi - w1Range * (1 + FIB_W3 + FIB_W5);
-
-          if (price < wave2Hi && price > wave1Lo * 0.98) {
-            waveNum = 3; wavePhase = 'IMPULSE'; waveDir = 'bear';
-            desc = `Wave 3 down — strongest bearish wave! Targeting ${fP(w3Target, pair.pip)}`;
-            targets = [
-              { label: 'W3 Target (161.8%)', val: fP(w3Target, pair.pip) },
-              { label: 'W4 Rally (38.2%)', val: fP(w4Target, pair.pip) },
-              { label: 'W5 Extension', val: fP(w5Target, pair.pip) }
-            ];
-          } else if (price < wave1Lo) {
-            waveNum = 3; wavePhase = 'IMPULSE'; waveDir = 'bear';
-            desc = `Wave 3 extending down — watch W4 bounce at ${fP(w4Target, pair.pip)}`;
-            targets = [
-              { label: 'W3 Target (161.8%)', val: fP(w3Target, pair.pip) },
-              { label: 'W4 Rally (38.2%)', val: fP(w4Target, pair.pip) }
-            ];
+  } else if (bias === 'BEARISH' && all.length >= 4) {
+    const highs = all.filter(s=>s.t==='H').slice(-3);
+    const lows  = all.filter(s=>s.t==='L').slice(-3);
+    if (highs.length >= 2 && lows.length >= 1) {
+      const w1hi = highs[0].price, w1lo = lows[0].price;
+      const w2hi = highs[1] ? highs[1].price : null;
+      if (w2hi) {
+        const w1range = w1hi - w1lo;
+        const retrace = w1range > 0 ? (w2hi - w1lo) / w1range : 0;
+        if (retrace >= 0.3 && retrace <= 0.8) {
+          const w3t = w1hi - w1range * 2.618;
+          const w4t = w1hi - w1range * (2.618 - 2.618*0.382);
+          const w5t = w1hi - w1range * 3.618;
+          if (price >= w1lo * 0.997 && price <= w2hi) {
+            wave=2; phase='CORRECTIVE'; dir='bear';
+            desc='Wave 2 bounce ('+Math.round(retrace*100)+'% retrace) — SELL zone before Wave 3 drop';
+            targets=[{k:'W3 Target (161.8%)',v:fP2(w3t)},{k:'W4 Rally',v:fP2(w4t)},{k:'W5 Final',v:fP2(w5t)}];
+          } else if (price < w1lo) {
+            wave=3; phase='IMPULSE'; dir='bear';
+            desc='Wave 3 down — strongest bearish wave! Watch W4 rally at '+fP2(w4t);
+            targets=[{k:'W3 Target (161.8%)',v:fP2(w3t)},{k:'W4 Rally',v:fP2(w4t)},{k:'W5 Final',v:fP2(w5t)}];
           } else {
-            waveNum = 2; wavePhase = 'CORRECTIVE'; waveDir = 'bear';
-            desc = `Wave 2 bounce (${(retrace * 100).toFixed(0)}%) — sell zone. W3 targets ${fP(w3Target, pair.pip)}`;
-            targets = [
-              { label: 'W3 Target (161.8%)', val: fP(w3Target, pair.pip) }
-            ];
+            wave=1; phase='FORMING'; dir='bear';
+            desc='Wave 1 down forming — wait for Wave 2 bounce to sell';
+            targets=[{k:'W3 Target',v:fP2(w3t)}];
           }
+        } else {
+          wave=4; phase='CORRECTIVE'; dir='bear';
+          desc='Wave 4 / ABC bounce — await completion before Wave 5 down';
+          targets=[{k:'Wave 5 Target',v:fP2(w1hi - w1range*3.618)}];
         }
       }
     }
+  } else {
+    wave=1; phase='FORMING'; dir='neut';
+    desc='No clear impulse structure yet — SMC bias needed for EW confirmation';
   }
-
-  // Detect ABC correction (after impulse exhaustion)
-  if (waveNum === 0) {
-    // Check for ABC corrective after impulse
-    const lastH = swHs.slice(-1)[0];
-    const lastL = swLs.slice(-1)[0];
-    if (lastH && lastL) {
-      const hiLo = Math.abs(lastH.price - lastL.price);
-      // Simple ABC: if recent structure shows 3-wave against bias
-      const recentBias = cls.slice(-10);
-      const recentUp = recentBias[recentBias.length - 1] > recentBias[0];
-      if (smcBias === 'BULLISH' && !recentUp) {
-        waveNum = 4; wavePhase = 'CORRECTIVE'; waveDir = 'bull';
-        const cTarget = lastH.price + hiLo * 1.0;
-        desc = `ABC Correction in progress — Wave 4 pullback. Expect resumption → ${fP(cTarget, pair.pip)}`;
-        targets = [{ label: 'Wave 5 Target', val: fP(cTarget, pair.pip) }];
-      } else if (smcBias === 'BEARISH' && recentUp) {
-        waveNum = 4; wavePhase = 'CORRECTIVE'; waveDir = 'bear';
-        const cTarget = lastL.price - hiLo * 1.0;
-        desc = `ABC Bounce in progress — Wave 4 correction. Expect resumption → ${fP(cTarget, pair.pip)}`;
-        targets = [{ label: 'Wave 5 Target', val: fP(cTarget, pair.pip) }];
-      } else {
-        waveNum = 1; wavePhase = 'FORMING'; waveDir = smcBias === 'BULLISH' ? 'bull' : smcBias === 'BEARISH' ? 'bear' : 'neutral';
-        desc = `Wave 1 forming — early impulse detected. Confirming structure, wait for Wave 2 pullback entry`;
-        targets = [];
-      }
-    }
-  }
-
-  if (waveNum === 0) {
-    waveNum = 1; wavePhase = 'FORMING'; waveDir = 'neutral';
-    desc = 'Wave structure building — insufficient confirmed pivots yet';
-  }
-
-  return { wave: waveNum, phase: wavePhase, direction: waveDir, targets, info: desc };
+  return { wave, phase, dir, targets, desc };
 }
 
-function renderElliottWave(ewResult, pair) {
-  const { wave, phase, direction, targets, info } = ewResult;
-
+function renderEW(ew) {
   // Badge
-  const badgeEl = document.getElementById('ewBadgeEl');
-  const bcls = direction === 'bull' ? 'ew-bull' : direction === 'bear' ? 'ew-bear' : 'ew-neutral';
-  const label = phase === 'IMPULSE' ? `Wave ${wave} · Impulse` :
-    phase === 'CORRECTIVE' ? `Wave ${wave} · Correction` :
-      phase === 'FORMING' ? `Wave ${wave} · Forming` : 'Analyzing...';
-  badgeEl.innerHTML = `<div class="ew-badge ${bcls}">${direction === 'bull' ? '▲' : direction === 'bear' ? '▼' : '◆'} ${label}</div>`;
+  const bcls = ew.dir==='bull'?'ew-bull':ew.dir==='bear'?'ew-bear':'ew-neut';
+  const bIcon = ew.dir==='bull'?'▲ ':ew.dir==='bear'?'▼ ':'◆ ';
+  const bLabel = ew.phase==='IMPULSE'?'W'+ew.wave+' Impulse':ew.phase==='CORRECTIVE'?'W'+ew.wave+' Correction':'W'+ew.wave+' Forming';
+  document.getElementById('ewBadge').innerHTML = '<div class="ew-badge '+bcls+'">'+bIcon+bLabel+'</div>';
 
-  // Wave sequence visual (1-2-3-4-5)
-  const waveRow = document.getElementById('ewWaveRow');
-  const waves = [1, 2, 3, 4, 5];
-  waveRow.innerHTML = waves.map((w, i) => {
-    const cls = w < wave ? 'ew-w-done' : w === wave ? 'ew-w-active' : 'ew-w-next';
-    const arrow = i < 4 ? `<span class="ew-arrow">→</span>` : '';
-    return `<div class="ew-wave ${cls}">${w}</div>${arrow}`;
-  }).join('') + ` <span class="ew-arrow">·</span> <div class="ew-wave ew-w-next" style="font-size:7px;letter-spacing:0;width:28px">ABC</div>`;
+  // Wave boxes 1-2-3-4-5
+  let wHtml = '';
+  for(let w=1;w<=5;w++){
+    const cls = w < ew.wave ? 'ew-done' : w === ew.wave ? 'ew-active' : 'ew-next';
+    wHtml += '<div class="ew-w '+cls+'">'+w+'</div>';
+    if(w<5) wHtml += '<span class="ew-sep">›</span>';
+  }
+  wHtml += '<span class="ew-sep"> · </span><div class="ew-w ew-next" style="font-size:7px;width:26px">ABC</div>';
+  document.getElementById('ewWaves').innerHTML = wHtml;
 
-  // Info
-  document.getElementById('ewInfo').textContent = info;
+  // Description
+  document.getElementById('ewDesc').textContent = ew.desc;
 
   // Targets
-  const tEl = document.getElementById('ewTargets');
-  tEl.innerHTML = targets.length ? targets.map(t =>
-    `<div class="ew-target"><span class="ew-tk">${t.label}</span><span class="ew-tv">${t.val}</span></div>`
-  ).join('') : '';
+  document.getElementById('ewTgts').innerHTML = ew.targets.map(t=>
+    '<div class="ew-tgt"><span class="ew-tk">'+t.k+'</span><span class="ew-tv">'+t.v+'</span></div>'
+  ).join('');
 }
 
 // ================================================================
-//  MULTI-TIMEFRAME ANALYSIS ENGINE
-//  Runs skAnalyze on simulated candles for 5M/15M/1H/4H/D
-//  to cross-validate direction — only shows high-confidence signals
+//  MULTI-TIMEFRAME ENGINE
 // ================================================================
-const MTF_TIMEFRAMES = [
-  { tf: '5', label: '5M' },
-  { tf: '15', label: '15M' },
-  { tf: '60', label: '1H' },
-  { tf: '240', label: '4H' },
-  { tf: 'D', label: 'D' }
+const MTF_TFS = [
+  {tf:'5',   lbl:'5M'},
+  {tf:'15',  lbl:'15M'},
+  {tf:'60',  lbl:'1H'},
+  {tf:'240', lbl:'4H'},
+  {tf:'D',   lbl:'D'}
 ];
+let _mtfCache = {};
 
-let mtfCache = {}; // keyed by sym+tf
-let mtfFilterOn = false;
-let signalFilterOn = true; // 50%+ default ON
-
-function toggleSignalFilter() {
-  signalFilterOn = !signalFilterOn;
-  const btn = document.getElementById('filterBtn');
-  const txt = document.getElementById('filterBtnTxt');
-  btn.classList.toggle('active-f', signalFilterOn);
-  txt.textContent = signalFilterOn ? '50%+ Only' : 'All Signals';
-  scanAllPairs(); // re-render
+function mtfSim(pair, tf, baseCandles) {
+  const tfMins = tf==='D'?1440:parseInt(tf);
+  const baseMins = activeTF==='D'?1440:parseInt(activeTF);
+  const scale = tfMins / baseMins;
+  if (scale >= 1 && baseCandles && baseCandles.length > 10) {
+    const step = Math.max(1, Math.floor(scale));
+    const agg = [];
+    for(let i=0; i<baseCandles.length; i+=step){
+      const sl = baseCandles.slice(i, i+step);
+      if(!sl.length) continue;
+      agg.push({t:sl[0].t, o:sl[0].o, h:Math.max(...sl.map(c=>c.h)),
+        l:Math.min(...sl.map(c=>c.l)), c:sl[sl.length-1].c, v:sl.reduce((s,c)=>s+c.v,0)});
+    }
+    if(agg.length >= 10) return agg;
+  }
+  const sp = {...pair, vol: pair.vol * Math.sqrt(Math.max(1,scale))};
+  return genCandles(baseCandles ? baseCandles[baseCandles.length-1].c : pair.base, sp, 80);
 }
 
-function toggleMtfFilter() {
-  mtfFilterOn = !mtfFilterOn;
-  const btn = document.getElementById('mtfFilterBtn');
-  btn.classList.toggle('active-f', mtfFilterOn);
+function getMtfResults(pair, baseCandles) {
+  const res = {};
+  MTF_TFS.forEach(({tf}) => {
+    const key = pair.sym+'_'+tf;
+    if(_mtfCache[key] && Date.now()-_mtfCache[key].ts < 90000){
+      res[tf] = _mtfCache[key].r; return;
+    }
+    const c = mtfSim(pair, tf, baseCandles);
+    const r = skAnalyze(c, c[c.length-1].c, pair);
+    _mtfCache[key] = {r, ts:Date.now()};
+    res[tf] = r;
+  });
+  return res;
+}
+
+function getMtfAlign(mtfRes) {
+  const dirs = Object.values(mtfRes).map(r=>r.dir);
+  const b = dirs.filter(d=>d==='BUY').length;
+  const s = dirs.filter(d=>d==='SELL').length;
+  const total = dirs.length;
+  if(b>=4) return {align:'bull', score:b, lbl:'▲ BULLISH — '+b+'/'+total+' TF Aligned', cls:'mtf-ab'};
+  if(s>=4) return {align:'bear', score:s, lbl:'▼ BEARISH — '+s+'/'+total+' TF Aligned', cls:'mtf-as'};
+  if(b>=3) return {align:'bull', score:b, lbl:'▲ Mostly Bullish '+b+'/'+total+' TF', cls:'mtf-ab'};
+  if(s>=3) return {align:'bear', score:s, lbl:'▼ Mostly Bearish '+s+'/'+total+' TF', cls:'mtf-as'};
+  return {align:'mixed', score:0, lbl:'⇅ Mixed ('+b+'↑ '+s+'↓) — Wait for alignment', cls:'mtf-am'};
+}
+
+function renderMtf(mtfRes) {
+  const grid = document.getElementById('mtfGrid');
+  grid.innerHTML = MTF_TFS.map(({tf,lbl})=>{
+    const r = mtfRes[tf];
+    const isCur = tf === activeTF;
+    if(!r) return '<div class="mtf-cell mtf-w'+(isCur?' mtf-cur':'')+'"><div class="mtf-tf-lbl">'+lbl+'</div><div class="mtf-d">—</div><div class="mtf-s">—</div></div>';
+    const cls = r.dir==='BUY'?'mtf-b':r.dir==='SELL'?'mtf-s2':'mtf-w';
+    const icon = r.dir==='BUY'?'▲':r.dir==='SELL'?'▼':'—';
+    return '<div class="mtf-cell '+cls+(isCur?' mtf-cur':'')+'" onclick="switchTF(\''+tf+'\')" title="'+lbl+': '+r.dir+' '+r.str+'%">'
+      +'<div class="mtf-tf-lbl">'+lbl+'</div><div class="mtf-d">'+icon+'</div><div class="mtf-s">'+r.str+'%</div></div>';
+  }).join('');
+  const aln = getMtfAlign(mtfRes);
+  const el = document.getElementById('mtfAlignEl');
+  el.className = 'mtf-align '+aln.cls;
+  el.textContent = aln.lbl;
+}
+
+function switchTF(tf) {
+  const map = {'5':'5M','15':'15M','60':'1H','240':'4H','D':'D'};
+  document.querySelectorAll('.tf').forEach(b=>b.classList.toggle('active', b.textContent===map[tf]));
+  activeTF = tf;
+  if(cache[activePair.sym]) cache[activePair.sym].fetchedAt=0;
+  loadPairData(activePair,true).then(d=>{ updatePanel(activePair,d.result); startAnim(); });
+}
+
+// ================================================================
+//  SIGNAL FILTER STATE
+// ================================================================
+let _flt50 = true;
+let _fltMtf = false;
+
+function toggle50Filter(){
+  _flt50 = !_flt50;
+  const btn=document.getElementById('flt50');
+  if(btn){ btn.classList.toggle('flt-on',_flt50); document.getElementById('flt50txt').textContent=_flt50?'50%+ Only':'All Signals'; }
   scanAllPairs();
 }
-
-function getMtfKey(sym, tf) { return sym + '_' + tf; }
-
-// Simulate multi-tf candles by scaling the current pair's volatility
-function simMtfCandles(pair, tf, baseCandles) {
-  // Scale candle count and volatility relative to TF
-  const tfMins = tf === 'D' ? 1440 : parseInt(tf);
-  const baseTfMins = parseInt(activeTF === 'D' ? '1440' : activeTF);
-  const scale = tfMins / baseTfMins;
-
-  // Aggregate candles if scaling up, or generate new if scaling down
-  if (scale >= 1 && baseCandles && baseCandles.length > 10) {
-    const aggStep = Math.max(1, Math.floor(scale));
-    const agg = [];
-    for (let i = 0; i < baseCandles.length; i += aggStep) {
-      const slice = baseCandles.slice(i, Math.min(i + aggStep, baseCandles.length));
-      if (!slice.length) continue;
-      agg.push({
-        t: slice[0].t,
-        o: slice[0].o,
-        h: Math.max(...slice.map(c => c.h)),
-        l: Math.min(...slice.map(c => c.l)),
-        c: slice[slice.length - 1].c,
-        v: slice.reduce((s, c) => s + c.v, 0)
-      });
-    }
-    return agg.length >= 10 ? agg : genCandles(pair.base, pair, 60);
-  } else {
-    // Generate synthetic candles with volatility scaled to TF
-    const scaledPair = { ...pair, vol: pair.vol * Math.sqrt(scale) };
-    const price = baseCandles ? baseCandles[baseCandles.length - 1].c : pair.base;
-    return genCandles(price, scaledPair, 80);
-  }
+function toggleMtfFilter(){
+  _fltMtf = !_fltMtf;
+  const btn=document.getElementById('fltMtf');
+  if(btn) btn.classList.toggle('flt-on',_fltMtf);
+  scanAllPairs();
 }
-
-function analyzeMtf(pair, baseCandles) {
-  const results = {};
-  for (const { tf, label } of MTF_TIMEFRAMES) {
-    const key = getMtfKey(pair.sym, tf);
-    // Use cache if fresh (within 2 min for MTF)
-    if (mtfCache[key] && Date.now() - mtfCache[key].ts < 120000) {
-      results[tf] = mtfCache[key].r;
-      continue;
-    }
-    const candles = simMtfCandles(pair, tf, baseCandles);
-    const price = candles[candles.length - 1].c;
-    const r = skAnalyze(candles, price, pair);
-    mtfCache[key] = { r, ts: Date.now() };
-    results[tf] = r;
-  }
-  return results;
-}
-
-function getMtfAlignment(mtfResults) {
-  const dirs = Object.values(mtfResults).map(r => r.dir);
-  const bulls = dirs.filter(d => d === 'BUY').length;
-  const bears = dirs.filter(d => d === 'SELL').length;
-  const total = dirs.length;
-  if (bulls >= 4) return { align: 'bull', score: bulls, label: `▲ BULLISH ${bulls}/${total} TF Aligned`, cls: 'mtf-aligned-bull' };
-  if (bears >= 4) return { align: 'bear', score: bears, label: `▼ BEARISH ${bears}/${total} TF Aligned`, cls: 'mtf-aligned-bear' };
-  if (bulls >= 3) return { align: 'bull', score: bulls, label: `▲ Mostly Bullish ${bulls}/${total} TF`, cls: 'mtf-aligned-bull' };
-  if (bears >= 3) return { align: 'bear', score: bears, label: `▼ Mostly Bearish ${bears}/${total} TF`, cls: 'mtf-aligned-bear' };
-  return { align: 'mixed', score: 0, label: `⇅ Mixed ${bulls}↑ ${bears}↓ — Wait for alignment`, cls: 'mtf-mixed' };
-}
-
-function renderMtf(mtfResults, pair) {
-  const grid = document.getElementById('mtfGrid');
-  const alignEl = document.getElementById('mtfAlignBadge');
-
-  grid.innerHTML = MTF_TIMEFRAMES.map(({ tf, label }) => {
-    const r = mtfResults[tf];
-    if (!r) return `<div class="mtf-cell mtf-wait"><div class="mtf-tf">${label}</div><div class="mtf-dir">—</div></div>`;
-    const cls = r.dir === 'BUY' ? 'mtf-bull' : r.dir === 'SELL' ? 'mtf-sell' : 'mtf-wait';
-    const isActive = tf === activeTF;
-    return `<div class="mtf-cell ${cls}${isActive ? ' mtf-active' : ''}" onclick="setTFByVal('${tf}',this)" title="${label}: ${r.dir} ${r.str}%">
-      <div class="mtf-tf">${label}</div>
-      <div class="mtf-dir">${r.dir === 'BUY' ? '▲' : r.dir === 'SELL' ? '▼' : '—'}</div>
-      <div class="mtf-str">${r.str}%</div>
-    </div>`;
-  }).join('');
-
-  const aln = getMtfAlignment(mtfResults);
-  alignEl.className = 'mtf-align ' + aln.cls;
-  alignEl.innerHTML = aln.label;
-}
-
-// TF switch from MTF grid click
-function setTFByVal(tf, cellEl) {
-  activeTF = tf;
-  document.querySelectorAll('.tf').forEach(b => {
-    b.classList.toggle('active', b.textContent === (tf === 'D' ? 'D' : tf + 'M'));
-  });
-  if (cache[activePair.sym]) cache[activePair.sym].fetchedAt = 0;
-  loadPairData(activePair, true).then(d => {
-    updatePanel(activePair, d.result);
-    startAnim();
-  });
-}
-
-// ================================================================
-//  ENHANCED scanAllPairs — with signal filter (50%+ only)
-// ================================================================
 
 // liveLoop no longer used — kept as no-op for safety
 function liveLoop(){ /* replaced by markDirty() system */ }
@@ -2682,14 +2559,14 @@ function updatePanel(pair,result){
   renderNewsForPair(pair.sym);
   renderAllNews();
 
-  // ── Elliott Wave Analysis ──
-  const ewResult = elliottWaveAnalyze(candles || result.candles, result, pair);
-  renderElliottWave(ewResult, pair);
+  // Elliott Wave
+  const _ew = ewAnalyze(result.candles, result, pair);
+  renderEW(_ew);
 
-  // ── Multi-Timeframe Analysis ──
-  const baseCandles = (cache[pair.sym] && cache[pair.sym].candles) || result.candles;
-  const mtfResults = analyzeMtf(pair, baseCandles);
-  renderMtf(mtfResults, pair);
+  // Multi-Timeframe
+  const _bc = (cache[pair.sym]&&cache[pair.sym].candles)||result.candles;
+  const _mtf = getMtfResults(pair, _bc);
+  renderMtf(_mtf);
 }
 
 // Pair list
@@ -2726,19 +2603,17 @@ function buildPairList(){
 }
 
 // Notifications
-function buildNotifCard(pair,result,rank,mtfAln){
+function buildNotifCard(pair,result,rank,mtfTag=''){
   const p=pair.pip;
   const pc=result.str>=80?'pri-high':result.str>=65?'pri-med':'pri-low';
   const dc=result.dir==='BUY'?'udb-buy':'udb-sell';
   const sc=result.dir==='BUY'?'b':'s';
   const eta=rank===0?'NOW':rank===1?'~2-5 min':rank===2?'~5-15 min':'~15-30 min';
   const rr=result.sl&&result.tp3?(Math.abs(result.tp3-result.entry)/Math.abs(result.sl-result.entry)).toFixed(1):'—';
-  const facts=result.confirmedFactors.slice(0,3);
+  const facts=result.confirmedFactors.slice(0,4);
   const ni=result.newsImpact;
   const newsTag=ni==='high'?`<span class="utc-f-tag" style="color:#ff6b6b;border:1px solid rgba(255,23,68,.3)">🚨NEWS</span>`:
                 ni==='med'?`<span class="utc-f-tag" style="color:var(--orange)">⚠NEWS</span>`:'';
-  const mtfTag = mtfAln && mtfAln.align!=='mixed'
-    ? `<span class="utc-f-tag" style="color:${mtfAln.align==='bull'?'var(--green)':'var(--red)'};border:1px solid ${mtfAln.align==='bull'?'rgba(0,230,118,.3)':'rgba(255,23,68,.3)'}">MTF ${mtfAln.score}/5</span>` : '';
   return`<div class="utc-card" onclick="selectPair('${pair.sym}');rpTab(document.querySelector('.rpt'),'Signal')">
     <div class="utc-priority ${pc}"></div>
     <div class="utc-top">
@@ -2772,39 +2647,44 @@ function scanAllPairs(){
     }
   });
 
-  // Compute MTF alignment for each pair
-  const mtfAlignMap = {};
-  PAIRS.forEach(pair => {
-    if (cache[pair.sym]) {
-      const mtfRes = analyzeMtf(pair, cache[pair.sym].candles);
-      mtfAlignMap[pair.sym] = getMtfAlignment(mtfRes);
-    }
-  });
+  // Build MTF alignment map for filter
+  const _mtfMap = {};
+  if(_fltMtf){
+    PAIRS.forEach(p=>{
+      if(cache[p.sym]){
+        _mtfMap[p.sym] = getMtfAlign(getMtfResults(p, cache[p.sym].candles));
+      }
+    });
+  }
 
-  const minStr = signalFilterOn ? 50 : 0;
-
-  let upcoming = PAIRS
-    .filter(p => {
-      if (!cache[p.sym]) return false;
-      const r = cache[p.sym].result;
-      if (r.dir === 'WAIT') return false;
-      if (r.str < minStr) return false;
-      if (mtfFilterOn) {
-        const aln = mtfAlignMap[p.sym];
-        if (!aln) return false;
-        const dirMatch = (r.dir === 'BUY' && aln.align === 'bull') || (r.dir === 'SELL' && aln.align === 'bear');
-        if (!dirMatch) return false;
+  const minStr = _flt50 ? 50 : 0;
+  const upcoming=PAIRS
+    .filter(p=>{
+      if(!cache[p.sym]||cache[p.sym].result.dir==='WAIT') return false;
+      if(cache[p.sym].result.str < minStr) return false;
+      if(_fltMtf){
+        const aln = _mtfMap[p.sym];
+        if(!aln) return false;
+        const r = cache[p.sym].result;
+        if(r.dir==='BUY'&&aln.align!=='bull') return false;
+        if(r.dir==='SELL'&&aln.align!=='bear') return false;
       }
       return true;
     })
-    .sort((a, b) => cache[b.sym].result.str - cache[a.sym].result.str);
+    .sort((a,b)=>cache[b.sym].result.str-cache[a.sym].result.str);
 
-  document.getElementById('notifBadge').textContent = upcoming.length;
-  document.getElementById('sbTotal').textContent = `${PAIRS.length} pairs · ${upcoming.length} setups`;
-  const list = document.getElementById('notifList');
-  list.innerHTML = upcoming.length
-    ? upcoming.map((p, i) => buildNotifCard(p, cache[p.sym].result, i, mtfAlignMap[p.sym])).join('')
-    : `<div class="empty-notif"><div style="font-size:20px">🔍</div><div>${signalFilterOn ? 'No 50%+ signals right now' : 'No setups found'} ${mtfFilterOn ? '(MTF filter active)' : ''}</div></div>`;
+  document.getElementById('notifBadge').textContent=upcoming.length;
+  document.getElementById('sbTotal').textContent=`${PAIRS.length} pairs · ${upcoming.length} setups`;
+  const list=document.getElementById('notifList');
+  const mtfTagFn = (sym)=>{
+    const aln=_mtfMap[sym];
+    if(!aln||aln.align==='mixed') return '';
+    const c=aln.align==='bull'?'color:var(--green);border:1px solid rgba(0,230,118,.3)':'color:var(--red);border:1px solid rgba(255,23,68,.3)';
+    return '<span class="utc-f-tag" style="'+c+'">MTF '+aln.score+'/5</span>';
+  };
+  list.innerHTML=upcoming.length
+    ?upcoming.map((p,i)=>buildNotifCard(p,cache[p.sym].result,i,mtfTagFn(p.sym))).join('')
+    :`<div class="empty-notif"><div style="font-size:20px">🔍</div><div>${_flt50?'No 50%+ signals':'No setups'}${_fltMtf?' (MTF filter on)':''}</div></div>`;
   buildPairList();
   if(upcoming.length){
     const top=upcoming[0];const r=cache[top.sym].result;
@@ -2895,39 +2775,21 @@ function toggleEye(){
 }
 function doLogin(){
   const u=document.getElementById('lUser').value.trim();
-  const p=document.getElementById('lPass').value.trim();
+  const p=document.getElementById('lPass').value;
   const err=document.getElementById('loginErr'),box=document.getElementById('loginBox');
   if(u===_LU&&p===_LP){
     const ov=document.getElementById('loginOverlay');
-    ov.style.transition='opacity .5s ease';
-    ov.style.opacity='0';
-    ov.style.pointerEvents='none';
-    setTimeout(function(){
-      ov.style.display='none';
-      appStart();
-    },550);
+    ov.style.transition='opacity .6s ease';ov.style.opacity='0';
+    setTimeout(function(){ov.classList.add('hidden');appStart();},650);
   } else {
-    err.classList.add('show');
-    box.classList.remove('login-shake');
-    void box.offsetWidth;
-    box.classList.add('login-shake');
+    err.classList.add('show');box.classList.remove('login-shake');
+    void box.offsetWidth;box.classList.add('login-shake');
     document.getElementById('lPass').value='';
     setTimeout(function(){err.classList.remove('show');},2800);
   }
 }
 async function appStart(){
-  // Wait for login overlay to fully hide and DOM to reflow
-  await new Promise(r=>setTimeout(r,150));
-
-  // Force canvas to fill its container
-  const wrap = canvas.parentElement;
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.style.display = 'block';
-
-  // Multiple resize attempts to ensure proper sizing
-  resizeCanvas();
-  await new Promise(r=>setTimeout(r,100));
+  await new Promise(r=>setTimeout(r,80));
   resizeCanvas();
 
   // Pre-fill all pairs with sim data instantly
@@ -2946,9 +2808,6 @@ async function appStart(){
 
   // Load real Twelve Data for EUR/USD
   await selectPair('EUR/USD');
-
-  // Final resize after all content loaded
-  setTimeout(resizeCanvas, 300);
 }
 // appStart() triggered by doLogin()
 </script>
