@@ -459,6 +459,7 @@ canvas#chart.panning{cursor:grabbing;}
     <span>API</span>
     <div class="rl-bar"><div class="rl-fill rl-ok" id="rlFill" style="width:0%"></div></div>
     <span id="rlTxt">0/8</span>
+    <span id="nextPollEl" style="color:var(--gold);margin-left:3px;font-size:6px;letter-spacing:.5px"></span>
   </div>
   <span id="apiKeyMask" style="font-size:7px;color:var(--dim);letter-spacing:1px">KEY #1: ****fa625</span>
   <div class="slst-block">
@@ -1143,14 +1144,36 @@ const RL = {
 };
 
 function updateRLBar(){
-  const lim=getCurrentLimit();
-  const pct=Math.min(100,(lim.calls/8)*100);
+  // Total remaining across ALL keys this minute
+  const totalRemain = TD_KEY_LIMITS.reduce((sum,l)=>{
+    if(Date.now()>=l.resetAt) return sum+8;
+    return sum+Math.max(0,8-l.calls);
+  },0);
+  const totalMax = TD_KEYS.length*8; // 40
+  const pct = Math.min(100, ((totalMax-totalRemain)/totalMax)*100);
+  const lim = getCurrentLimit();
+  const secsLeft = Math.max(0, Math.ceil((lim.resetAt-Date.now())/1000));
+
   const fill=document.getElementById('rlFill');
   const txt=document.getElementById('rlTxt');
   if(!fill||!txt)return;
   fill.style.width=pct+'%';
-  fill.className='rl-fill '+(pct>=100?'rl-full':pct>=75?'rl-warn':'rl-ok');
-  txt.textContent=`K${TD_KEY_IDX+1}: ${lim.calls}/8`;
+  fill.className='rl-fill '+(pct>=90?'rl-full':pct>=65?'rl-warn':'rl-ok');
+
+  // Show: K2: 3/8 · 12s · Total: 35/40
+  const exhausted = TD_KEY_LIMITS.filter(l=>l.exhausted).length;
+  if(exhausted===TD_KEYS.length){
+    txt.textContent=`⏳ All keys cooling · ${secsLeft}s`;
+  } else {
+    txt.textContent=`K${TD_KEY_IDX+1}: ${lim.calls}/8 · ${secsLeft}s · ${totalRemain}/${totalMax} left`;
+  }
+
+  // Next poll indicator
+  const nextEl=document.getElementById('nextPollEl');
+  if(nextEl){
+    const interval=_pollInterval();
+    nextEl.textContent=`↻ ${Math.round(interval/1000)}s`;
+  }
 }
 
 function setApiStatus(mode){
@@ -1270,31 +1293,74 @@ function livePrice(pair){
   return pair.base*(1+(Math.random()-.5)*.005);
 }
 
-// ── Poll active pair price every 30s ──
+// ================================================================
+//  SMART ADAPTIVE POLLER
+//  • Merges poll + auto-refresh into ONE call (saves 50% API quota)
+//  • Interval adapts to session activity + remaining API budget
+//  • Kill zone / overlap → 45s  |  Active session → 90s  |  Off → 5min
+//  • Pauses automatically when all keys near limit
+// ================================================================
 let pollTimer=null;
+
+function _pollInterval(){
+  // Check how many calls remain across all keys this minute
+  const remaining = TD_KEY_LIMITS.reduce((sum,l)=>{
+    if(Date.now()>=l.resetAt) return sum+8;
+    return sum + Math.max(0, 8-l.calls);
+  }, 0);
+  const totalBudget = TD_KEYS.length * 8; // e.g. 5 keys × 8 = 40/min
+
+  if(remaining <= 3) return 180000;   // critically low → 3 min pause
+  if(remaining <= 8) return 120000;   // low → 2 min
+  // Session-aware interval
+  const hr = new Date().getUTCHours();
+  // Tokyo: 23-08, London: 07-16, NY: 12-21 UTC overlap zones
+  const isKZ = (hr>=7&&hr<=9)||(hr>=12&&hr<=14)||(hr>=22||hr<=1);
+  const isActive = (hr>=7&&hr<=21);
+  if(isKZ)    return 45000;   // kill zone: 45s
+  if(isActive) return 90000;  // active: 90s
+  return 300000;              // off-session/weekend: 5min
+}
+
 function startLivePoll(){
   clearInterval(pollTimer);
+
   async function poll(){
-    const q=await tdQuote(activePair);
-    if(q && cache[activePair.sym]){
-      cache[activePair.sym].price=q.price;
-      cache[activePair.sym].chg=q.chg;
-      // Update last candle
-      const c=cache[activePair.sym].candles;
-      if(c?.length) c[c.length-1].c=q.price;
-      // Update topbar
-      document.getElementById('apSym').textContent=activePair.sym;
-      document.getElementById('apPrice').textContent=fP(q.price,activePair.pip);
-      const el=document.getElementById('apChg');
-      el.textContent=(q.chg>=0?'+':'')+q.chg.toFixed(2)+'%';
-      el.className='ap-chg '+(q.chg>=0?'up':'dn');
-      markDirty();  // price changed — redraw once, then stop
-      buildPairList();
-      setApiStatus('live');
+    try{
+      // Single tdFetch = 1 API call only (candles + price + chg)
+      const fetched = await tdFetch(activePair, 100);
+      if(fetched && fetched.candles.length >= 5){
+        const existing = cache[activePair.sym]?.candles || [];
+        // Merge: keep old history + replace tail with fresh candles
+        const merged = existing.length > fetched.candles.length
+          ? [...existing.slice(0, existing.length - fetched.candles.length), ...fetched.candles]
+          : fetched.candles;
+
+        const result = skAnalyze(merged, fetched.price, activePair);
+        cache[activePair.sym] = {
+          price: fetched.price, chg: fetched.chg,
+          candles: merged, result,
+          fetchedAt: Date.now(), isLive: true
+        };
+
+        // Update topbar
+        document.getElementById('apPrice').textContent = fP(fetched.price, activePair.pip);
+        const chgEl = document.getElementById('apChg');
+        chgEl.textContent = (fetched.chg>=0?'+':'')+fetched.chg.toFixed(2)+'%';
+        chgEl.className = 'ap-chg '+(fetched.chg>=0?'up':'dn');
+
+        markDirty();
+        buildPairList();
+        setApiStatus('live');
+      }
+    } catch(e){
+      console.warn('[Poll]', e.message);
     }
+    // Schedule next poll adaptively
+    pollTimer = setTimeout(poll, _pollInterval());
   }
-  poll();
-  pollTimer=setInterval(poll,30000);
+
+  poll(); // fire immediately on pair select
 }
 
 // ================================================================
@@ -3079,14 +3145,10 @@ async function doRefresh(){
   startAnim();buildPairList();renderAllNews();
 }
 
-// Auto-refresh every 30s
-setInterval(async()=>{
-  if(cache[activePair.sym]) cache[activePair.sym].fetchedAt=0;
-  const d=await loadPairData(activePair);
-  updatePanel(activePair,d.result);
-  buildPairList();
-},30000);
-setInterval(renderAllNews,60000);
+// News refresh every 2 min (no API call — just re-renders cached news)
+setInterval(renderAllNews, 120000);
+// API budget display refresh every 10s
+setInterval(updateRLBar, 10000);
 
 
 
