@@ -1963,6 +1963,9 @@ function drawAll(){
   }
 
   // BOS
+  if(result.bosUp){
+    const bosX=xOf(hC-5),bosY=yOf(Math.max(...candles.slice(-5).map(c=>c.h)));
+    ctx.fillStyle='rgba(0,230,118,.9)';ctx.font=`bold ${8.5*dpr}px IBM Plex Mono`;ctx.textAlign='center';
     ctx.fillText('BOS',bosX,bosY-14*dpr);
     ctx.beginPath();ctx.moveTo(bosX,bosY-12*dpr);ctx.lineTo(bosX-5*dpr,bosY-5*dpr);ctx.lineTo(bosX+5*dpr,bosY-5*dpr);ctx.closePath();
     ctx.fillStyle='rgba(0,230,118,.8)';ctx.fill();
@@ -2892,15 +2895,22 @@ function toggleEye(){
 }
 function doLogin(){
   const u=document.getElementById('lUser').value.trim();
-  const p=document.getElementById('lPass').value;
+  const p=document.getElementById('lPass').value.trim();
   const err=document.getElementById('loginErr'),box=document.getElementById('loginBox');
   if(u===_LU&&p===_LP){
     const ov=document.getElementById('loginOverlay');
-    ov.style.transition='opacity .6s ease';ov.style.opacity='0';
-    setTimeout(function(){ov.classList.add('hidden');appStart();},650);
+    ov.style.transition='opacity .5s ease';
+    ov.style.opacity='0';
+    ov.style.pointerEvents='none';
+    setTimeout(function(){
+      ov.style.display='none';
+      appStart();
+    },550);
   } else {
-    err.classList.add('show');box.classList.remove('login-shake');
-    void box.offsetWidth;box.classList.add('login-shake');
+    err.classList.add('show');
+    box.classList.remove('login-shake');
+    void box.offsetWidth;
+    box.classList.add('login-shake');
     document.getElementById('lPass').value='';
     setTimeout(function(){err.classList.remove('show');},2800);
   }
