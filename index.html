@@ -114,7 +114,15 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .ms-fvg{background:rgba(212,168,67,.12);color:var(--gold);}
 .ms-news-h{background:rgba(255,23,68,.2);color:#ff6b6b;border:1px solid rgba(255,23,68,.3);}
 .ms-news-m{background:rgba(255,152,0,.15);color:var(--orange);border:1px solid rgba(255,152,0,.3);}
-canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
+canvas#chart{flex:1;display:block;width:100%!important;min-height:0;cursor:crosshair;}
+canvas#chart.panning{cursor:grabbing;}
+/* Zoom controls */
+.zoom-ctrl{position:absolute;bottom:32px;left:10px;display:flex;gap:3px;z-index:10;}
+.zb{width:22px;height:22px;border-radius:3px;background:rgba(6,12,24,.85);border:1px solid var(--border2);color:var(--dim);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;user-select:none;}
+.zb:hover{border-color:var(--gold);color:var(--gold);}
+.zoom-info{position:absolute;bottom:32px;left:90px;font-size:7px;color:var(--dim);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;background:rgba(3,6,13,.7);padding:2px 6px;border-radius:2px;pointer-events:none;}
+/* Crosshair info */
+.crosshair-info{position:absolute;top:32px;left:10px;font-size:8px;color:var(--text);font-family:'IBM Plex Mono',monospace;background:rgba(6,12,24,.85);border:1px solid var(--border2);border-radius:3px;padding:3px 8px;pointer-events:none;display:none;letter-spacing:.5px;z-index:10;}
 
 /* ── RIGHT PANEL ── */
 .right-panel{background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
@@ -506,6 +514,14 @@ canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
     </div>
     <canvas id="chart"></canvas>
     <div class="forecast-dot" id="forecastDot"></div>
+    <div class="zoom-ctrl">
+      <div class="zb" onclick="zoomIn()" title="Zoom In">+</div>
+      <div class="zb" onclick="zoomOut()" title="Zoom Out">−</div>
+      <div class="zb" onclick="zoomReset()" title="Reset View" style="font-size:9px;width:28px">FIT</div>
+      <div class="zb" onclick="zoomMore()" title="More History" style="font-size:8px;width:28px">ALL</div>
+    </div>
+    <div class="zoom-info" id="zoomInfo">SCROLL: zoom · DRAG: pan</div>
+    <div class="crosshair-info" id="crosshairInfo"></div>
   </div>
 
   <!-- RIGHT PANEL -->
@@ -1154,38 +1170,44 @@ function tdInterval(tf){
 }
 
 // ── Fetch real-time quote ──
-async function tdQuote(pair){
-  try{
-    const url=`${TD_BASE}/quote?symbol=${encodeURIComponent(pair.sym)}&apikey=${getCurrentKey()}`;
-    const d=await RL.fetch(url);
-    if(d.status==='error'||d.code)throw new Error(d.message||'quote error');
-    const price=parseFloat(d.close);
-    const open=parseFloat(d.open);
-    return{price, chg:((price-open)/open)*100};
-  }catch(e){
-    console.warn('[TD quote]',pair.sym,e.message);
-    return null;
-  }
-}
-
-// ── Fetch OHLCV candles ──
-async function tdCandles(pair, count=100){
+// ── Single API call: time_series returns candles + latest price embedded ──
+// This saves 1 API call per fetch (was 2: quote + candles → now just 1)
+async function tdFetch(pair, count=500){
   try{
     const iv=tdInterval(activeTF);
+    // outputsize=500 gets full history in one shot
     const url=`${TD_BASE}/time_series?symbol=${encodeURIComponent(pair.sym)}&interval=${iv}&outputsize=${count}&apikey=${getCurrentKey()}`;
     const d=await RL.fetch(url);
-    if(d.status==='error'||!d.values)throw new Error(d.message||'no data');
+    if(d.status==='error'||!d.values||!d.values.length) throw new Error(d.message||'no data');
     // TD returns newest-first → reverse to oldest-first
-    return d.values.slice().reverse().map(v=>({
+    const candles=d.values.slice().reverse().map(v=>({
       t:new Date(v.datetime),
       o:parseFloat(v.open), h:parseFloat(v.high),
       l:parseFloat(v.low),  c:parseFloat(v.close),
       v:parseFloat(v.volume)||1000
     }));
+    // Latest price + daily change derived from data (no extra API call needed)
+    const latest=candles[candles.length-1];
+    const dayStart=candles.find(c=>{
+      const d=new Date(c.t); const n=new Date(latest.t);
+      return d.getUTCFullYear()===n.getUTCFullYear()&&d.getUTCMonth()===n.getUTCMonth()&&d.getUTCDate()===n.getUTCDate();
+    });
+    const price=latest.c;
+    const chg=dayStart?((price-dayStart.o)/dayStart.o)*100:0;
+    return{candles, price, chg};
   }catch(e){
-    console.warn('[TD candles]',pair.sym,e.message);
+    console.warn('[TD fetch]',pair.sym,e.message);
     return null;
   }
+}
+// Legacy stubs — kept for poll compatibility
+async function tdQuote(pair){
+  try{
+    const url=`${TD_BASE}/quote?symbol=${encodeURIComponent(pair.sym)}&apikey=${getCurrentKey()}`;
+    const d=await RL.fetch(url);
+    if(d.status==='error'||d.code) throw new Error(d.message||'quote error');
+    return{price:parseFloat(d.close),chg:((parseFloat(d.close)-parseFloat(d.open))/parseFloat(d.open))*100};
+  }catch(e){ return null; }
 }
 
 // ── Simulated candles fallback ──
@@ -1213,29 +1235,26 @@ function genCandles(price,pair,count=100){
   return candles;
 }
 
-// ── Main data loader: real API → fallback sim ──
+// ── Main data loader — single API call, 500 candles ──
 async function loadPairData(pair, force=false){
   const sym=pair.sym;
-  // Return cached data if fresh (< 55s) and not forced
   if(!force && cache[sym]?.fetchedAt && Date.now()-cache[sym].fetchedAt<55000) return cache[sym];
 
   let candles=null, price=cache[sym]?.price||pair.base, chg=cache[sym]?.chg||0, isLive=false;
 
-  // Fetch real candles + quote in parallel
-  const [c,q]=await Promise.all([tdCandles(pair,100), tdQuote(pair)]);
+  // ONE API call fetches 500 candles + derives price/chg from data
+  const fetched = await tdFetch(pair, 500);
 
-  if(c && c.length>=10){
-    candles=c;
-    price=c[c.length-1].c;
-    if(q){price=q.price; chg=q.chg;}
-    else{chg=((price-c[0].o)/c[0].o)*100;}
+  if(fetched && fetched.candles.length>=10){
+    candles=fetched.candles;
+    price=fetched.price;
+    chg=fetched.chg;
     isLive=true;
     setApiStatus('live');
   } else {
-    // Sim fallback
     price=cache[sym]?.price || pair.base*(1+(Math.random()-.5)*.005);
     chg=cache[sym]?.chg||0;
-    candles=genCandles(price,pair);
+    candles=genCandles(price,pair,500);
     setApiStatus('demo');
   }
 
@@ -1800,10 +1819,191 @@ function fPips(v,pip){return v?Math.round(Math.abs(v)/pip)+' pips':'—';}
 // ================================================================
 //  CANVAS DRAW ENGINE
 // ================================================================
+
+// ================================================================
+//  ZOOM & PAN ENGINE
+//  viewport = { startIdx, endIdx } — which candles are visible
+//  Zoom: scroll wheel shrinks/expands the range
+//  Pan:  mouse drag shifts startIdx/endIdx
+// ================================================================
+const VP = {
+  startIdx: 0,   // first visible candle index
+  endIdx:   0,   // last visible candle index (0 = use all)
+  _dragging: false,
+  _dragStartX: 0,
+  _dragStartIdx: 0,
+};
+
+function vpInit(n){
+  // Default: show last 120 candles (or all if fewer)
+  VP.endIdx   = n - 1;
+  VP.startIdx = Math.max(0, n - 120);
+}
+
+function vpCandles(allCandles){
+  if(!allCandles||!allCandles.length) return allCandles;
+  if(VP.endIdx===0) vpInit(allCandles.length);
+  const s = Math.max(0, Math.min(VP.startIdx, allCandles.length-10));
+  const e = Math.max(s+9, Math.min(VP.endIdx, allCandles.length-1));
+  return allCandles.slice(s, e+1);
+}
+
+function vpVisible(){
+  const d = cache[activePair.sym];
+  if(!d) return 0;
+  return Math.max(1, VP.endIdx - VP.startIdx + 1);
+}
+
+function zoomIn(){
+  const d=cache[activePair.sym]; if(!d) return;
+  const n=d.candles.length;
+  const vis=VP.endIdx-VP.startIdx;
+  const center=Math.round((VP.startIdx+VP.endIdx)/2);
+  const newVis=Math.max(20, Math.round(vis*0.6));
+  VP.startIdx=Math.max(0, center-Math.floor(newVis/2));
+  VP.endIdx=Math.min(n-1, VP.startIdx+newVis);
+  if(VP.endIdx===n-1) VP.startIdx=Math.max(0,n-1-newVis);
+  updateZoomInfo(); markDirty();
+}
+
+function zoomOut(){
+  const d=cache[activePair.sym]; if(!d) return;
+  const n=d.candles.length;
+  const vis=VP.endIdx-VP.startIdx;
+  const center=Math.round((VP.startIdx+VP.endIdx)/2);
+  const newVis=Math.min(n-1, Math.round(vis*1.65));
+  VP.startIdx=Math.max(0, center-Math.floor(newVis/2));
+  VP.endIdx=Math.min(n-1, VP.startIdx+newVis);
+  updateZoomInfo(); markDirty();
+}
+
+function zoomReset(){
+  const d=cache[activePair.sym]; if(!d) return;
+  const n=d.candles.length;
+  VP.startIdx=Math.max(0,n-120);
+  VP.endIdx=n-1;
+  updateZoomInfo(); markDirty();
+}
+
+function zoomMore(){
+  // Show ALL candles (full history)
+  const d=cache[activePair.sym]; if(!d) return;
+  VP.startIdx=0;
+  VP.endIdx=d.candles.length-1;
+  updateZoomInfo(); markDirty();
+}
+
+function updateZoomInfo(){
+  const d=cache[activePair.sym]; if(!d) return;
+  const vis=VP.endIdx-VP.startIdx+1;
+  const total=d.candles.length;
+  const el=document.getElementById('zoomInfo');
+  if(el) el.textContent=`${vis} candles visible / ${total} total · SCROLL zoom · DRAG pan`;
+}
+
+// ── Mouse wheel zoom ──
+canvas.addEventListener('wheel', function(e){
+  e.preventDefault();
+  const d=cache[activePair.sym]; if(!d) return;
+  const n=d.candles.length;
+  // Zoom around mouse X position
+  const rect=canvas.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)/rect.width; // 0..1
+  const vis=VP.endIdx-VP.startIdx;
+  const focusIdx=Math.round(VP.startIdx + mx*vis);
+  const factor = e.deltaY>0 ? 1.25 : 0.8; // scroll down = zoom out
+  const newVis=Math.max(15, Math.min(n-1, Math.round(vis*factor)));
+  VP.startIdx=Math.max(0, Math.round(focusIdx - mx*newVis));
+  VP.endIdx=Math.min(n-1, VP.startIdx+newVis);
+  if(VP.endIdx===n-1) VP.startIdx=Math.max(0,n-1-newVis);
+  updateZoomInfo(); markDirty();
+}, {passive:false});
+
+// ── Mouse drag pan ──
+canvas.addEventListener('mousedown', function(e){
+  if(e.button!==0) return;
+  VP._dragging=true;
+  VP._dragStartX=e.clientX;
+  VP._dragStartIdx=VP.startIdx;
+  canvas.classList.add('panning');
+});
+window.addEventListener('mousemove', function(e){
+  if(!VP._dragging) return;
+  const d=cache[activePair.sym]; if(!d) return;
+  const n=d.candles.length;
+  const rect=canvas.getBoundingClientRect();
+  const vis=VP.endIdx-VP.startIdx;
+  const pxPerBar=rect.width/Math.max(1,vis);
+  const deltaBars=Math.round((VP._dragStartX-e.clientX)/pxPerBar);
+  const newStart=Math.max(0, Math.min(n-1-vis, VP._dragStartIdx+deltaBars));
+  VP.startIdx=newStart;
+  VP.endIdx=Math.min(n-1, newStart+vis);
+  updateZoomInfo(); markDirty();
+});
+window.addEventListener('mouseup', function(){
+  VP._dragging=false;
+  canvas.classList.remove('panning');
+});
+
+// ── Touch support (pinch zoom + drag) ──
+let _touchStart=null, _touchDist=0;
+canvas.addEventListener('touchstart', function(e){
+  if(e.touches.length===1){
+    _touchStart={x:e.touches[0].clientX, startIdx:VP.startIdx};
+  } else if(e.touches.length===2){
+    _touchDist=Math.abs(e.touches[0].clientX-e.touches[1].clientX);
+  }
+},{passive:true});
+canvas.addEventListener('touchmove', function(e){
+  const d=cache[activePair.sym]; if(!d) return;
+  const n=d.candles.length;
+  const rect=canvas.getBoundingClientRect();
+  const vis=VP.endIdx-VP.startIdx;
+  if(e.touches.length===1&&_touchStart){
+    const pxPerBar=rect.width/Math.max(1,vis);
+    const deltaBars=Math.round((_touchStart.x-e.touches[0].clientX)/pxPerBar);
+    const newStart=Math.max(0,Math.min(n-1-vis,_touchStart.startIdx+deltaBars));
+    VP.startIdx=newStart; VP.endIdx=Math.min(n-1,newStart+vis);
+    markDirty();
+  } else if(e.touches.length===2){
+    const newDist=Math.abs(e.touches[0].clientX-e.touches[1].clientX);
+    if(_touchDist>0){
+      const factor=_touchDist/newDist;
+      const newVis=Math.max(15,Math.min(n-1,Math.round(vis*factor)));
+      VP.startIdx=Math.max(0,VP.startIdx);
+      VP.endIdx=Math.min(n-1,VP.startIdx+newVis);
+    }
+    _touchDist=newDist;
+    markDirty();
+  }
+},{passive:true});
+
+// ── Crosshair on hover ──
+let _crossX=-1, _crossY=-1;
+canvas.addEventListener('mousemove', function(e){
+  if(VP._dragging) return;
+  const rect=canvas.getBoundingClientRect();
+  _crossX=e.clientX-rect.left;
+  _crossY=e.clientY-rect.top;
+  markDirty();
+});
+canvas.addEventListener('mouseleave', function(){
+  _crossX=-1; _crossY=-1;
+  document.getElementById('crosshairInfo').style.display='none';
+  markDirty();
+});
+
 function drawAll(){
   const d=cache[activePair.sym];
   if(!d)return;
-  const{candles,result}=d;
+  const allCandles=d.candles;
+  const result=d.result;
+  // Apply viewport — only render visible candles
+  if(VP.endIdx===0) vpInit(allCandles.length);
+  const vStart=Math.max(0,Math.min(VP.startIdx,allCandles.length-10));
+  const vEnd=Math.max(vStart+9,Math.min(VP.endIdx,allCandles.length-1));
+  const candles=allCandles.slice(vStart,vEnd+1);
+
   const dpr=window.devicePixelRatio||1;
   const W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H);
@@ -1812,19 +2012,56 @@ function drawAll(){
   const CW=W-ML-MR,CH=H-MT-MB;
   const hC=candles.length,fS=result.fSteps,total=hC+fS+3;
 
-  const allP=[
+  // Price range: use visible candles only for tight Y axis
+  const visP=[
     ...candles.flatMap(c=>[c.h,c.l]),
-    ...result.upper,...result.lower,
     result.sl,result.tp1,result.tp2,result.tp3,
+  ].filter(x=>x!==null&&!isNaN(x)&&isFinite(x));
+  // Include forecast + overlays only if they're in visible range
+  const allStructP=[
+    ...result.upper,...result.lower,
     ...result.fvgs.flatMap(f=>[f.lo,f.hi]),
     ...result.obList.flatMap(o=>[o.lo,o.hi])
   ].filter(x=>x!==null&&!isNaN(x)&&isFinite(x));
+  const allP=[...visP,...allStructP].filter(x=>x!==null&&!isNaN(x)&&isFinite(x));
   const pMin=Math.min(...allP)*.9996;
   const pMax=Math.max(...allP)*1.0004;
-  const pR=pMax-pMin;
+  const pR=pMax-pMin||0.001;
 
+  // xOf maps candle index (0..hC-1 for history, hC+ for forecast)
   const xOf=i=>ML+(i/(total-1))*CW;
   const yOf=p=>MT+(1-(p-pMin)/pR)*CH;
+
+  // ── Crosshair ──
+  const dprI=1/dpr;
+  if(_crossX>=0&&_crossY>=0){
+    const cx=_crossX*dpr, cy=_crossY*dpr;
+    ctx.strokeStyle='rgba(170,192,213,.18)';ctx.lineWidth=dpr;ctx.setLineDash([3*dpr,3*dpr]);
+    ctx.beginPath();ctx.moveTo(cx,MT);ctx.lineTo(cx,MT+CH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ML,cy);ctx.lineTo(ML+CW,cy);ctx.stroke();
+    ctx.setLineDash([]);
+    // Price at crosshair
+    const crossP=pMin+(1-(cy-MT)/CH)*pR;
+    const barW2=CW/Math.max(1,total-1);
+    const barIdx=Math.floor((cx-ML)/barW2);
+    const ci=Math.max(0,Math.min(hC-1,barIdx));
+    const cb=candles[ci];
+    let infoTxt=fP(crossP,activePair.pip);
+    if(cb){
+      const slstD=new Date(cb.t.getTime()+330*60000);
+      const ts=slstD.getUTCHours().toString().padStart(2,'0')+':'+slstD.getUTCMinutes().toString().padStart(2,'0');
+      infoTxt=`${ts}  O:${fP(cb.o,activePair.pip)} H:${fP(cb.h,activePair.pip)} L:${fP(cb.l,activePair.pip)} C:${fP(cb.c,activePair.pip)}`;
+    }
+    const el=document.getElementById('crosshairInfo');
+    if(el){el.style.display='block';el.textContent=infoTxt;}
+    // Price label on right axis
+    ctx.fillStyle='rgba(170,192,213,.25)';ctx.fillRect(W-MR+2,cy-8*dpr,MR-4,14*dpr);
+    ctx.fillStyle='rgba(170,192,213,.8)';ctx.font=`${8*dpr}px IBM Plex Mono`;ctx.textAlign='left';
+    ctx.fillText(fP(crossP,activePair.pip),W-MR+4,cy+3*dpr);
+  } else {
+    const el=document.getElementById('crosshairInfo');
+    if(el) el.style.display='none';
+  }
 
   // Grid
   ctx.strokeStyle='rgba(17,32,48,.65)';ctx.lineWidth=.5*dpr;
@@ -2214,16 +2451,21 @@ function drawAll(){
   ctx.fillStyle='#fff';ctx.font=`${8.5*dpr}px IBM Plex Mono`;ctx.textAlign='left';
   ctx.fillText(ps,W-MR+4,cpY+4*dpr);
 
-  // Time axis (SLST)
+  // Time axis (SLST) — date-aware for wide zooms
   ctx.fillStyle='rgba(36,53,69,.85)';ctx.font=`${7.5*dpr}px IBM Plex Mono`;ctx.textAlign='center';
   const step=Math.max(1,Math.floor(hC/9));
+  const showDate = activeTF==='D' || hC>200; // show date on daily or wide view
   for(let i=0;i<hC;i+=step){
     const c=candles[i];if(!c)continue;
     const dd=new Date(c.t);
-    // Convert UTC to SLST (+5:30)
     const slstMs=dd.getTime()+330*60000;
     const slstD=new Date(slstMs);
-    const lbl=`${slstD.getUTCHours().toString().padStart(2,'0')}:${slstD.getUTCMinutes().toString().padStart(2,'0')}`;
+    let lbl;
+    if(showDate){
+      lbl=`${(slstD.getUTCMonth()+1).toString().padStart(2,'0')}/${slstD.getUTCDate().toString().padStart(2,'0')}`;
+    } else {
+      lbl=`${slstD.getUTCHours().toString().padStart(2,'0')}:${slstD.getUTCMinutes().toString().padStart(2,'0')}`;
+    }
     ctx.fillText(lbl,xOf(i),MT+CH+18*dpr);
   }
 
@@ -2798,6 +3040,9 @@ async function selectPair(sym){
   startAnim();
   // Fetch real data
   const d=await loadPairData(pair);
+  // Reset viewport for new pair
+  vpInit(d.candles.length);
+  updateZoomInfo();
   updatePanel(pair,d.result);
   startAnim();
   buildPairList();
@@ -2810,6 +3055,8 @@ async function setTF(btn,tf){
   btn.classList.add('active');
   if(cache[activePair.sym]) cache[activePair.sym].fetchedAt=0;
   const d=await loadPairData(activePair,true);
+  vpInit(d.candles.length);
+  updateZoomInfo();
   updatePanel(activePair,d.result);
   startAnim();
 }
