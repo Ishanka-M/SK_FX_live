@@ -1632,39 +1632,124 @@ function skAnalyze(candles,price,pair){
   const keyScore=dir==='BUY'?keyBull:dir==='SELL'?keyBear:0;
   const smcGrade=keyScore>=4?'A+':keyScore===3?'A':keyScore===2?'B':keyScore===1?'C':'D';
 
-  // ── 14. SL/TP AT STRUCTURE LEVELS (SMC-based) ─────────────
-  // SL: beyond the last swing low (for BUY) or swing high (for SELL)
-  // TP: next significant liquidity level (BSL/SSL)
+  // ── 14. SL/TP AT STRUCTURE LEVELS (SMC-based, fully validated) ──────
+  // RULES:
+  //   BUY:  SL must be BELOW entry. TP1/TP2/TP3 must be ABOVE entry, ascending.
+  //   SELL: SL must be ABOVE entry. TP1/TP2/TP3 must be BELOW entry, descending.
+  //   Minimum R:R enforced: TP1 ≥ 1:1.5, TP2 ≥ 1:2.5, TP3 ≥ 1:4
   const entry=price;
   let sl=null, tp1=null, tp2=null, tp3=null;
 
   if(dir==='BUY'){
-    // SL below last swing low or OB low (whichever is closer to price)
-    const slSwing=lastSwL?lastSwL.price-atr*0.3:price-atr*1.5;
-    const slOB=mainOB&&obB?mainOB.fullLo-atr*0.2:null;
-    sl=slOB?Math.max(slSwing,slOB):slSwing; // tighter SL
-    // TP1 = 50% equilibrium, TP2 = swing high, TP3 = BSL / IPDA high
-    tp1=mid;
-    tp2=swH;
-    tp3=bsl>swH?bsl:ipdaHigh; // target liquidity
+    // ── SL: below entry, at last swing low (with OB fallback) ──
+    // Collect all candidate SL levels that are STRICTLY below entry
+    const slCandidates = [];
+    if(lastSwL && lastSwL.price < entry) slCandidates.push(lastSwL.price - atr*0.2);
+    if(mainOB && obB && mainOB.fullLo < entry)  slCandidates.push(mainOB.fullLo - atr*0.15);
+    if(ssl && ssl < entry) slCandidates.push(ssl - atr*0.1);
+    // Pick the highest valid SL below entry (tightest, best R:R)
+    const validSLs = slCandidates.filter(v => v < entry - atr*0.3);
+    sl = validSLs.length > 0 ? Math.max(...validSLs) : entry - atr*1.5;
+    // Hard clamp: SL must always be below entry
+    if(sl >= entry) sl = entry - atr*1.5;
+
+    const risk = entry - sl; // always positive
+
+    // ── TP1: first target ABOVE entry ──
+    // Use mid (equilibrium) only if it's above entry, else use 1:1.5 R:R
+    const tp1Candidates = [
+      mid > entry ? mid : null,
+      swH > entry ? swH : null,
+      ipdaMid > entry ? ipdaMid : null,
+    ].filter(Boolean);
+    tp1 = tp1Candidates.length > 0 ? Math.min(...tp1Candidates) : entry + risk*1.5;
+    if(tp1 <= entry) tp1 = entry + risk*1.5;
+
+    // ── TP2: swing high or IPDA high, above TP1 ──
+    const tp2Candidates = [
+      swH > tp1 ? swH : null,
+      ipdaHigh > tp1 ? ipdaHigh : null,
+      bsl > tp1 ? bsl : null,
+    ].filter(Boolean);
+    tp2 = tp2Candidates.length > 0 ? Math.min(...tp2Candidates) : entry + risk*2.5;
+    if(tp2 <= tp1) tp2 = tp1 + risk*1.0;
+
+    // ── TP3: BSL / IPDA high, above TP2 ──
+    const tp3Candidates = [
+      bsl > tp2 ? bsl : null,
+      ipdaHigh > tp2 ? ipdaHigh : null,
+      rangeH > tp2 ? rangeH : null,
+    ].filter(Boolean);
+    tp3 = tp3Candidates.length > 0 ? Math.min(...tp3Candidates) : entry + risk*4.0;
+    if(tp3 <= tp2) tp3 = tp2 + risk*1.5;
+
   } else if(dir==='SELL'){
-    const slSwing=lastSwH?lastSwH.price+atr*0.3:price+atr*1.5;
-    const slOB=mainOB&&!obB?mainOB.fullHi+atr*0.2:null;
-    sl=slOB?Math.min(slSwing,slOB):slSwing;
-    tp1=mid;
-    tp2=swL;
-    tp3=ssl<swL?ssl:ipdaLow;
+    // ── SL: above entry, at last swing high ──
+    const slCandidates = [];
+    if(lastSwH && lastSwH.price > entry) slCandidates.push(lastSwH.price + atr*0.2);
+    if(mainOB && !obB && mainOB.fullHi > entry) slCandidates.push(mainOB.fullHi + atr*0.15);
+    if(bsl && bsl > entry) slCandidates.push(bsl + atr*0.1);
+    const validSLs = slCandidates.filter(v => v > entry + atr*0.3);
+    sl = validSLs.length > 0 ? Math.min(...validSLs) : entry + atr*1.5;
+    // Hard clamp: SL must always be above entry
+    if(sl <= entry) sl = entry + atr*1.5;
+
+    const risk = sl - entry; // always positive
+
+    // ── TP1: first target BELOW entry ──
+    const tp1Candidates = [
+      mid < entry ? mid : null,
+      swL < entry ? swL : null,
+      ipdaMid < entry ? ipdaMid : null,
+    ].filter(Boolean);
+    tp1 = tp1Candidates.length > 0 ? Math.max(...tp1Candidates) : entry - risk*1.5;
+    if(tp1 >= entry) tp1 = entry - risk*1.5;
+
+    // ── TP2: swing low or IPDA low, below TP1 ──
+    const tp2Candidates = [
+      swL < tp1 ? swL : null,
+      ipdaLow < tp1 ? ipdaLow : null,
+      ssl < tp1 ? ssl : null,
+    ].filter(Boolean);
+    tp2 = tp2Candidates.length > 0 ? Math.max(...tp2Candidates) : entry - risk*2.5;
+    if(tp2 >= tp1) tp2 = tp1 - risk*1.0;
+
+    // ── TP3: SSL / IPDA low, below TP2 ──
+    const tp3Candidates = [
+      ssl < tp2 ? ssl : null,
+      ipdaLow < tp2 ? ipdaLow : null,
+      rangeL < tp2 ? rangeL : null,
+    ].filter(Boolean);
+    tp3 = tp3Candidates.length > 0 ? Math.max(...tp3Candidates) : entry - risk*4.0;
+    if(tp3 >= tp2) tp3 = tp2 - risk*1.5;
   }
 
-  // Validate — ensure SL gives at least 1:1.5 R:R to TP1
-  if(sl&&tp1){
-    const riskPips=Math.abs(entry-sl);
-    const rewardPips=Math.abs(tp1-entry);
-    if(rewardPips<riskPips*1.5){
-      // Expand TP1 to ensure minimum 1:2 R:R
-      if(dir==='BUY') tp1=entry+riskPips*2;
-      else tp1=entry-riskPips*2;
-    }
+  // ── Final hard validation pass ──
+  // Ensure strict order: BUY → sl < entry < tp1 < tp2 < tp3
+  //                      SELL → tp3 < tp2 < tp1 < entry < sl
+  if(dir==='BUY' && sl!==null){
+    const risk = entry - sl;
+    if(risk <= 0){ sl = entry - atr*1.5; }
+    const r2 = entry - sl;
+    if(!tp1 || tp1 <= entry) tp1 = entry + r2*1.5;
+    if(!tp2 || tp2 <= tp1)   tp2 = tp1  + r2*1.0;
+    if(!tp3 || tp3 <= tp2)   tp3 = tp2  + r2*1.5;
+    // Final sanity: round-trip clamp
+    tp1 = Math.max(tp1, entry + r2*1.5);
+    tp2 = Math.max(tp2, tp1  + r2*0.5);
+    tp3 = Math.max(tp3, tp2  + r2*0.5);
+  }
+  if(dir==='SELL' && sl!==null){
+    const risk = sl - entry;
+    if(risk <= 0){ sl = entry + atr*1.5; }
+    const r2 = sl - entry;
+    if(!tp1 || tp1 >= entry) tp1 = entry - r2*1.5;
+    if(!tp2 || tp2 >= tp1)   tp2 = tp1  - r2*1.0;
+    if(!tp3 || tp3 >= tp2)   tp3 = tp2  - r2*1.5;
+    // Final sanity: round-trip clamp
+    tp1 = Math.min(tp1, entry - r2*1.5);
+    tp2 = Math.min(tp2, tp1  - r2*0.5);
+    tp3 = Math.min(tp3, tp2  - r2*0.5);
   }
 
   // ── 15. FORECAST PATHS ────────────────────────────────────
