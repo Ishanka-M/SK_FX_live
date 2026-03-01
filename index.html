@@ -100,7 +100,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .news-none{background:transparent;}
 
 /* ── CENTER CHART ── */
-.chart-wrap{position:relative;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+.chart-wrap{position:relative;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;min-height:0;flex:1;}
 .chart-hdr{height:28px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:10px;flex-shrink:0;font-size:9px;}
 .ch-pair{color:var(--gold2);font-weight:700;letter-spacing:1px;font-size:11px;}
 .ch-tf{color:var(--dim);}
@@ -114,7 +114,7 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .ms-fvg{background:rgba(212,168,67,.12);color:var(--gold);}
 .ms-news-h{background:rgba(255,23,68,.2);color:#ff6b6b;border:1px solid rgba(255,23,68,.3);}
 .ms-news-m{background:rgba(255,152,0,.15);color:var(--orange);border:1px solid rgba(255,152,0,.3);}
-canvas#chart{flex:1;display:block;width:100%!important;min-height:0;}
+canvas#chart{flex:1;display:block;width:100%!important;height:100%!important;min-height:300px;}
 
 /* ── RIGHT PANEL ── */
 .right-panel{background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
@@ -1021,10 +1021,10 @@ function renderAllNews(){
 function resizeCanvas(){
   const wrap=canvas.parentElement;
   const dpr=window.devicePixelRatio||1;
-  const W=wrap.clientWidth;
-  // canvas flex:1 so get its rendered height directly
-  const H=canvas.offsetHeight||wrap.clientHeight-28;
-  if(W<1||H<1)return;
+  const W=wrap.clientWidth||wrap.offsetWidth||800;
+  const H=canvas.offsetHeight||canvas.clientHeight||wrap.clientHeight-28||400;
+  if(W<10||H<10)return;
+  if(canvas.width===W*dpr&&canvas.height===H*dpr)return; // no change needed
   canvas.width=W*dpr;canvas.height=H*dpr;
   canvas.style.width=W+'px';canvas.style.height=H+'px';
   if(cache[activePair.sym])markDirty();
@@ -2916,7 +2916,18 @@ function doLogin(){
   }
 }
 async function appStart(){
-  await new Promise(r=>setTimeout(r,80));
+  // Wait for login overlay to fully hide and DOM to reflow
+  await new Promise(r=>setTimeout(r,150));
+
+  // Force canvas to fill its container
+  const wrap = canvas.parentElement;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.display = 'block';
+
+  // Multiple resize attempts to ensure proper sizing
+  resizeCanvas();
+  await new Promise(r=>setTimeout(r,100));
   resizeCanvas();
 
   // Pre-fill all pairs with sim data instantly
@@ -2935,6 +2946,9 @@ async function appStart(){
 
   // Load real Twelve Data for EUR/USD
   await selectPair('EUR/USD');
+
+  // Final resize after all content loaded
+  setTimeout(resizeCanvas, 300);
 }
 // appStart() triggered by doLogin()
 </script>
