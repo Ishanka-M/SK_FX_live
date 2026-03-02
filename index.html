@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SK·FX — SMC v9 | EW+MTF | LKT</title>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Syncopate:wght@400;700&display=swap');
 
@@ -116,13 +117,15 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .ms-news-m{background:rgba(255,152,0,.15);color:var(--orange);border:1px solid rgba(255,152,0,.3);}
 canvas#chart{flex:1;display:block;width:100%!important;min-height:0;cursor:crosshair;}
 canvas#chart.panning{cursor:grabbing;}
-/* TradingView iframe */
-#tvFrame{flex:1;display:none;width:100%;border:none;min-height:0;}
-#tvFrame.show{display:block;}
+/* TV Lightweight Chart container */
+#tvLwChart{flex:1;min-height:0;display:none;position:relative;}
+#tvLwChart.show{display:block;}
 canvas#chart.tv-hidden{display:none;}
+/* Forecast dot hidden in TV mode */
+.forecast-dot.tv-hidden{display:none!important;}
 /* Chart mode toggle */
 .chart-mode-toggle{display:flex;gap:2px;margin-left:6px;}
-.cmt-btn{padding:2px 8px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--dim);font-family:'IBM Plex Mono',monospace;font-size:8px;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
+.cmt-btn{padding:2px 9px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--dim);font-family:'IBM Plex Mono',monospace;font-size:8px;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
 .cmt-btn:hover{border-color:var(--gold);color:var(--gold);}
 .cmt-btn.active{background:rgba(212,168,67,.15);border-color:var(--gold);color:var(--gold);}
 /* Zoom controls */
@@ -520,14 +523,14 @@ canvas#chart.tv-hidden{display:none;}
       <span class="ch-tf" id="chTf">5M</span>
       <span style="color:var(--dim);font-size:8px" id="chATR"></span>
       <div class="chart-mode-toggle">
-        <button class="cmt-btn active" id="btnSkChart" onclick="switchChart('sk')">SK CHART</button>
-        <button class="cmt-btn" id="btnTvChart" onclick="switchChart('tv')">📈 TRADINGVIEW</button>
+        <button class="cmt-btn active" id="btnSkChart" onclick="switchChartMode('sk')">SK CHART</button>
+        <button class="cmt-btn" id="btnTvChart" onclick="switchChartMode('tv')">📈 TV LIVE</button>
       </div>
       <div class="ch-ms" id="chMS"></div>
       <button class="refbtn" onclick="doRefresh()">⟳ REFRESH</button>
     </div>
     <canvas id="chart"></canvas>
-    <iframe id="tvFrame" src="" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>
+    <div id="tvLwChart"></div>
     <div class="forecast-dot" id="forecastDot"></div>
     <div class="zoom-ctrl">
       <div class="zb" onclick="zoomIn()" title="Zoom In">+</div>
@@ -1366,6 +1369,13 @@ function startLivePoll(){
         markDirty();
         buildPairList();
         setApiStatus('live');
+        // Update TV chart with fresh candle data
+        if(_chartMode==='tv' && _tvCandleSeries && fetched.candles.length){
+          const lastC = fetched.candles[fetched.candles.length-1];
+          try{
+            _tvCandleSeries.update({ time:Math.floor(new Date(lastC.t).getTime()/1000), open:lastC.o, high:lastC.h, low:lastC.l, close:lastC.c });
+          } catch(e){}
+        }
       }
     } catch(e){
       console.warn('[Poll]', e.message);
@@ -3109,7 +3119,6 @@ function showToast(t,b){
 async function selectPair(sym){
   const pair=PAIRS.find(p=>p.sym===sym);if(!pair)return;
   activePair=pair;
-  _tvReloadIfActive();
   buildPairList();
   // Show sim data immediately while real data loads
   if(!cache[sym]||!cache[sym].candles){
@@ -3128,19 +3137,22 @@ async function selectPair(sym){
   startAnim();
   buildPairList();
   startLivePoll();
+  // Rebuild TV chart if in TV mode
+  if(_chartMode==='tv') buildTVChart();
 }
 
 async function setTF(btn,tf){
   activeTF=tf;
   document.querySelectorAll('.tf').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  _tvReloadIfActive();
   if(cache[activePair.sym]) cache[activePair.sym].fetchedAt=0;
   const d=await loadPairData(activePair,true);
   vpInit(d.candles.length);
   updateZoomInfo();
   updatePanel(activePair,d.result);
   startAnim();
+  // Rebuild TV chart if in TV mode
+  if(_chartMode==='tv') buildTVChart();
 }
 
 function setCat(btn,cat){
@@ -3159,6 +3171,8 @@ async function doRefresh(){
   const d=await loadPairData(activePair,true);
   updatePanel(activePair,d.result);
   startAnim();buildPairList();renderAllNews();
+  // Rebuild TV chart if in TV mode
+  if(_chartMode==='tv') buildTVChart();
 }
 
 // News refresh every 2 min (no API call — just re-renders cached news)
@@ -3220,87 +3234,295 @@ async function appStart(){
   await selectPair('EUR/USD');
 }
 // ================================================================
-//  TRADINGVIEW CHART INTEGRATION
+//  TV LIGHTWEIGHT CHART ENGINE — All SK Overlays
 // ================================================================
-let _chartMode = 'sk'; // 'sk' or 'tv'
+let _chartMode = 'sk';
+let _tvChart = null, _tvCandleSeries = null;
+let _tvOverlaySeries = [];  // all primitive/line series
 
-const TV_SYMBOL_MAP = {
-  'EUR/USD':'FX:EURUSD','GBP/USD':'FX:GBPUSD','USD/JPY':'FX:USDJPY',
-  'USD/CHF':'FX:USDCHF','AUD/USD':'FX:AUDUSD','NZD/USD':'FX:NZDUSD',
-  'USD/CAD':'FX:USDCAD','EUR/GBP':'FX:EURGBP','EUR/JPY':'FX:EURJPY',
-  'EUR/CHF':'FX:EURCHF','EUR/AUD':'FX:EURAUD','GBP/JPY':'FX:GBPJPY',
-  'GBP/CHF':'FX:GBPCHF','GBP/AUD':'FX:GBPAUD','AUD/JPY':'FX:AUDJPY',
-  'NZD/JPY':'FX:NZDJPY','CAD/JPY':'FX:CADJPY','CHF/JPY':'FX:CHFJPY',
-  'USD/SGD':'FX:USDSGD','USD/ZAR':'FX:USDZAR','USD/MXN':'FX:USDMXN',
-  'USD/TRY':'FX:USDTRY','EUR/SEK':'FX:EURSEK','EUR/NOK':'FX:EURNOK',
-  'XAU/USD':'TVC:GOLD','XAG/USD':'TVC:SILVER','EUR/CAD':'FX:EURCAD',
-  'EUR/NZD':'FX:EURNZD','GBP/NZD':'FX:GBPNZD','GBP/CAD':'FX:GBPCAD',
-  'AUD/CHF':'FX:AUDCHF','AUD/CAD':'FX:AUDCAD','AUD/NZD':'FX:AUDNZD',
-  'CAD/CHF':'FX:CADCHF','USD/HKD':'FX:USDHKD','USD/PLN':'FX:USDPLN',
-  'USD/INR':'FX:USDINR','USD/LKR':'FX:USDLKR','EUR/TRY':'FX:EURTRY',
-  'GBP/ZAR':'FX:GBPZAR','XPT/USD':'TVC:PLATINUM'
-};
-
-const TV_TF_MAP = {
-  '1':'1','3':'3','5':'5','15':'15','30':'30','60':'60','240':'240','1D':'1D','1W':'1W'
-};
-
-function getTVUrl(sym, tf){
-  const tvSym = TV_SYMBOL_MAP[sym] || ('FX:' + sym.replace('/',''));
-  const tvTf = TV_TF_MAP[tf] || '60';
-  return `https://www.tradingview.com/widgetembed/?frameElementId=tvFrame&symbol=${encodeURIComponent(tvSym)}&interval=${tvTf}&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=03060d&studies=[]&theme=dark&style=1&timezone=Asia%2FColombo&withdateranges=1&showpopupbutton=1&studies_overrides=%7B%7D&overrides=%7B%22mainSeriesProperties.candleStyle.upColor%22%3A%22%2300e676%22%2C%22mainSeriesProperties.candleStyle.downColor%22%3A%22%23ff1744%22%2C%22mainSeriesProperties.candleStyle.borderUpColor%22%3A%22%2300e676%22%2C%22mainSeriesProperties.candleStyle.borderDownColor%22%3A%22%23ff1744%22%7D&enabled_features=[]&disabled_features=[]&locale=en&utm_source=skfx`;
-}
-
-function switchChart(mode){
+function switchChartMode(mode){
   _chartMode = mode;
   const canvas = document.getElementById('chart');
-  const tvFrame = document.getElementById('tvFrame');
-  const fDot = document.getElementById('forecastDot');
-  const zCtrl = document.querySelector('.zoom-ctrl');
-  const zInfo = document.getElementById('zoomInfo');
-  const xInfo = document.getElementById('crosshairInfo');
-  const btnSk = document.getElementById('btnSkChart');
-  const btnTv = document.getElementById('btnTvChart');
+  const tvDiv  = document.getElementById('tvLwChart');
+  const fDot   = document.getElementById('forecastDot');
+  const zCtrl  = document.querySelector('.zoom-ctrl');
+  const zInfo  = document.getElementById('zoomInfo');
+  const xInfo  = document.getElementById('crosshairInfo');
+  const btnSk  = document.getElementById('btnSkChart');
+  const btnTv  = document.getElementById('btnTvChart');
 
   if(mode === 'tv'){
-    // Load TradingView
-    const url = getTVUrl(activePair.sym, activeTF);
-    tvFrame.src = url;
     canvas.classList.add('tv-hidden');
-    tvFrame.classList.add('show');
-    if(fDot) fDot.style.display='none';
+    tvDiv.classList.add('show');
+    if(fDot)  fDot.style.display='none';
     if(zCtrl) zCtrl.style.display='none';
     if(zInfo) zInfo.style.display='none';
     if(xInfo) xInfo.style.display='none';
     btnSk.classList.remove('active');
     btnTv.classList.add('active');
+    buildTVChart();
   } else {
-    // SK Chart
-    tvFrame.src = '';
-    tvFrame.classList.remove('show');
+    tvDiv.classList.remove('show');
     canvas.classList.remove('tv-hidden');
-    if(fDot) fDot.style.display='';
+    if(fDot)  fDot.style.display='';
     if(zCtrl) zCtrl.style.display='';
     if(zInfo) zInfo.style.display='';
     btnTv.classList.remove('active');
     btnSk.classList.add('active');
+    // destroy TV chart to free memory
+    if(_tvChart){ _tvChart.remove(); _tvChart=null; _tvCandleSeries=null; _tvOverlaySeries=[]; }
     markDirty();
   }
 }
 
-// Auto-update TradingView chart when pair or TF changes
-const _origSelectPair = selectPair;
-// Patch: reload TV if in TV mode when pair changes
-function _tvReloadIfActive(){
-  if(_chartMode === 'tv'){
-    const url = getTVUrl(activePair.sym, activeTF);
-    document.getElementById('tvFrame').src = url;
+// Convert candle timestamp to TV unix seconds
+function toTvTime(t){ return Math.floor(new Date(t).getTime()/1000); }
+
+function buildTVChart(){
+  const d = cache[activePair.sym];
+  if(!d || !d.candles || !d.candles.length) return;
+
+  const tvDiv = document.getElementById('tvLwChart');
+  // Destroy previous
+  if(_tvChart){ _tvChart.remove(); _tvChart=null; _tvCandleSeries=null; _tvOverlaySeries=[]; }
+
+  const r = d.result;
+  const candles = d.candles;
+  const pip = activePair.pip;
+
+  // ── 1. Create chart ──
+  _tvChart = LightweightCharts.createChart(tvDiv, {
+    width: tvDiv.clientWidth,
+    height: tvDiv.clientHeight,
+    layout:{ background:{color:'#03060d'}, textColor:'#4a6070' },
+    grid:{ vertLines:{color:'rgba(17,32,48,.7)'}, horzLines:{color:'rgba(17,32,48,.7)'} },
+    crosshair:{ mode: LightweightCharts.CrosshairMode.Normal,
+      vertLine:{color:'rgba(170,192,213,.25)',labelBackgroundColor:'#060c18'},
+      horzLine:{color:'rgba(170,192,213,.25)',labelBackgroundColor:'#060c18'} },
+    rightPriceScale:{ borderColor:'#112030', textColor:'#4a6070' },
+    timeScale:{ borderColor:'#112030', timeVisible:true, secondsVisible:false, rightOffset:12 },
+    handleScroll:true, handleScale:true,
+  });
+
+  // Resize observer
+  const ro = new ResizeObserver(()=>{
+    if(_tvChart && tvDiv.clientWidth > 0 && tvDiv.clientHeight > 0){
+      _tvChart.applyOptions({ width:tvDiv.clientWidth, height:tvDiv.clientHeight });
+    }
+  });
+  ro.observe(tvDiv);
+
+  // ── 2. Candlestick series ──
+  _tvCandleSeries = _tvChart.addCandlestickSeries({
+    upColor:'#00e676', downColor:'#ff1744',
+    borderUpColor:'#00e676', borderDownColor:'#ff1744',
+    wickUpColor:'rgba(0,230,118,.7)', wickDownColor:'rgba(255,23,68,.7)',
+    priceLineVisible:true, lastValueVisible:true,
+  });
+
+  // Build candle data — ensure unique ascending timestamps
+  const seenTs = new Set();
+  const tvCandles = [];
+  candles.forEach(c => {
+    const ts = toTvTime(c.t);
+    if(seenTs.has(ts)) return;
+    seenTs.add(ts);
+    tvCandles.push({ time:ts, open:c.o, high:c.h, low:c.l, close:c.c });
+  });
+  tvCandles.sort((a,b)=>a.time-b.time);
+  _tvCandleSeries.setData(tvCandles);
+
+  // Price decimal formatter
+  const pDec = pip<.001?5:pip<.1?3:2;
+  _tvChart.applyOptions({ localization:{ priceFormatter: p => p.toFixed(pDec) } });
+
+  // ── 3. Current price live line ──
+  _tvCandleSeries.applyOptions({ lastValueVisible:true });
+
+  // Helper to make horizontal price line
+  function addPriceLine(series, price, color, title, lineStyle=1){
+    if(!price || isNaN(price)) return;
+    series.createPriceLine({ price, color, lineWidth:1, lineStyle, title, axisLabelVisible:true, axisLabelColor: color });
   }
+
+  // ── 4. EMA 20 ──
+  if(r.e20A && r.e20A.length){
+    const ema20s = _tvChart.addLineSeries({ color:'rgba(240,200,100,.7)', lineWidth:1, title:'EMA20', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const ema20d = [];
+    r.e20A.forEach((v,i)=>{ if(candles[i] && v && !isNaN(v)){ const ts=toTvTime(candles[i].t); if(!ema20d.length||ts>ema20d[ema20d.length-1].time) ema20d.push({time:ts,value:v}); } });
+    if(ema20d.length) ema20s.setData(ema20d);
+    _tvOverlaySeries.push(ema20s);
+  }
+
+  // ── 5. EMA 50 ──
+  if(r.e50A && r.e50A.length){
+    const ema50s = _tvChart.addLineSeries({ color:'rgba(41,182,246,.5)', lineWidth:1, title:'EMA50', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const ema50d = [];
+    r.e50A.forEach((v,i)=>{ if(candles[i] && v && !isNaN(v)){ const ts=toTvTime(candles[i].t); if(!ema50d.length||ts>ema50d[ema50d.length-1].time) ema50d.push({time:ts,value:v}); } });
+    if(ema50d.length) ema50s.setData(ema50d);
+    _tvOverlaySeries.push(ema50s);
+  }
+
+  // ── 6. Trade Levels — SL, Entry, TP1/2/3 ──
+  if(r.dir !== 'WAIT'){
+    addPriceLine(_tvCandleSeries, r.sl,    '#ff1744',       'SL',    2);
+    addPriceLine(_tvCandleSeries, r.entry, '#f0c866',       'ENTRY', 2);
+    addPriceLine(_tvCandleSeries, r.tp1,   '#69f0ae',       'TP1',   1);
+    addPriceLine(_tvCandleSeries, r.tp2,   '#00e676',       'TP2',   1);
+    addPriceLine(_tvCandleSeries, r.tp3,   '#00c853',       'TP3',   0);
+  }
+
+  // ── 7. BSL / SSL liquidity lines ──
+  if(r.bsl) addPriceLine(_tvCandleSeries, r.bsl, 'rgba(0,230,118,.5)', 'BSL', 3);
+  if(r.ssl) addPriceLine(_tvCandleSeries, r.ssl, 'rgba(255,23,68,.5)', 'SSL', 3);
+
+  // ── 8. IPDA Range ──
+  if(r.ipdaHigh) addPriceLine(_tvCandleSeries, r.ipdaHigh, 'rgba(41,182,246,.55)', 'IPDA H', 3);
+  if(r.ipdaLow)  addPriceLine(_tvCandleSeries, r.ipdaLow,  'rgba(41,182,246,.55)', 'IPDA L', 3);
+
+  // ── 9. OTE Zone ──
+  if(r.oteZone){
+    addPriceLine(_tvCandleSeries, r.oteZone.hi,  'rgba(212,168,67,.5)', 'OTE 79%', 3);
+    addPriceLine(_tvCandleSeries, r.oteZone.lo,  'rgba(212,168,67,.5)', 'OTE 62%', 3);
+    addPriceLine(_tvCandleSeries, r.oteZone.mid, 'rgba(212,168,67,.3)', 'OTE MID', 3);
+  }
+
+  // ── 10. EQ Midline ──
+  if(r.mid) addPriceLine(_tvCandleSeries, r.mid, 'rgba(74,96,112,.6)', 'EQ 50%', 3);
+
+  // ── 11. FVG Zones — as area series ──
+  (r.fvgs||[]).forEach((fvg, idx)=>{
+    if(!candles[fvg.i]) return;
+    const startTs = toTvTime(candles[Math.max(0,fvg.i-1)].t);
+    const endTs   = tvCandles[tvCandles.length-1].time;
+    const hiS = _tvChart.addLineSeries({ color:`rgba(212,168,67,${0.6+idx*.05})`, lineWidth:1, lineStyle:3, title:idx===0?'FVG':'', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const loS = _tvChart.addLineSeries({ color:`rgba(212,168,67,${0.4+idx*.05})`, lineWidth:1, lineStyle:3, title:'', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const fvgData = tvCandles.filter(c=>c.time>=startTs);
+    hiS.setData(fvgData.map(c=>({time:c.time, value:fvg.hi})));
+    loS.setData(fvgData.map(c=>({time:c.time, value:fvg.lo})));
+    _tvOverlaySeries.push(hiS, loS);
+  });
+
+  // ── 12. OB Zones — as line series pairs ──
+  (r.obList||[]).forEach((ob, idx)=>{
+    if(!candles[ob.i]) return;
+    const startTs = toTvTime(candles[ob.i].t);
+    const color   = ob.type==='bull' ? `rgba(0,230,118,${0.65-idx*.1})` : `rgba(255,23,68,${0.65-idx*.1})`;
+    const hiS = _tvChart.addLineSeries({ color, lineWidth:1, lineStyle:0, title:idx===0?(ob.type==='bull'?'BULL OB':'BEAR OB'):'', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const loS = _tvChart.addLineSeries({ color, lineWidth:1, lineStyle:0, title:'', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const obData = tvCandles.filter(c=>c.time>=startTs);
+    if(obData.length){
+      hiS.setData(obData.map(c=>({time:c.time, value:ob.hi})));
+      loS.setData(obData.map(c=>({time:c.time, value:ob.lo})));
+      _tvOverlaySeries.push(hiS, loS);
+    }
+  });
+
+  // ── 13. Swing H/L markers ──
+  const swMarkers = [];
+  (r.recentSwH||[]).forEach(sw=>{
+    if(!candles[sw.i]) return;
+    swMarkers.push({ time:toTvTime(candles[sw.i].t), position:'aboveBar', color:'#b39ddb', shape:'arrowDown', text:'SwH' });
+  });
+  (r.recentSwL||[]).forEach(sw=>{
+    if(!candles[sw.i]) return;
+    swMarkers.push({ time:toTvTime(candles[sw.i].t), position:'belowBar', color:'#b39ddb', shape:'arrowUp', text:'SwL' });
+  });
+
+  // ── 14. BOS / CHoCH / Liquidity Sweep markers ──
+  if(r.bosUp && candles[candles.length-5])
+    swMarkers.push({ time:toTvTime(candles[candles.length-5].t), position:'aboveBar', color:'#00e676', shape:'arrowDown', text:'BOS↑' });
+  if(r.bosDown && candles[candles.length-5])
+    swMarkers.push({ time:toTvTime(candles[candles.length-5].t), position:'belowBar', color:'#ff1744', shape:'arrowUp', text:'BOS↓' });
+  if(r.chochIdx && candles[r.chochIdx])
+    swMarkers.push({ time:toTvTime(candles[r.chochIdx].t), position: r.chochB?'belowBar':'aboveBar', color:'#b39ddb', shape: r.chochB?'arrowUp':'arrowDown', text:'CHoCH' });
+  if(r.lsIdx!==null && candles[r.lsIdx]){
+    if(r.lsH) swMarkers.push({ time:toTvTime(candles[r.lsIdx].t), position:'aboveBar', color:'#ff9800', shape:'arrowDown', text:'LSH' });
+    if(r.lsL) swMarkers.push({ time:toTvTime(candles[r.lsIdx].t), position:'belowBar', color:'#ff9800', shape:'arrowUp', text:'LSL' });
+  }
+  if(r.inducement && candles[r.inducement.i])
+    swMarkers.push({ time:toTvTime(candles[r.inducement.i].t), position: r.inducement.type==='bull'?'belowBar':'aboveBar', color:'#ff9800', shape: r.inducement.type==='bull'?'arrowUp':'arrowDown', text:'IND' });
+
+  // Sort markers by time (required by LW Charts)
+  swMarkers.sort((a,b)=>a.time-b.time);
+  if(swMarkers.length) _tvCandleSeries.setMarkers(swMarkers);
+
+  // ── 15. Elliott Wave line (dashed connecting swings) ──
+  const ewPoints = [
+    ...(r.recentSwH||[]).map(s=>({i:s.i, price:s.price})),
+    ...(r.recentSwL||[]).map(s=>({i:s.i, price:s.price}))
+  ].filter(s=>candles[s.i]).sort((a,b)=>a.i-b.i).slice(-6);
+  if(ewPoints.length>=2){
+    const ewS = _tvChart.addLineSeries({ color:'rgba(212,168,67,.35)', lineWidth:1, lineStyle:2, title:'EW', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const ewData = [];
+    ewPoints.forEach(p=>{ const ts=toTvTime(candles[p.i].t); if(!ewData.length||ts>ewData[ewData.length-1].time) ewData.push({time:ts,value:p.price}); });
+    if(ewData.length>=2) ewS.setData(ewData);
+    _tvOverlaySeries.push(ewS);
+  }
+
+  // ── 16. Forecast Mean Path ──
+  if(r.dir !== 'WAIT' && r.mean && r.mean.length){
+    const fcColor = r.dir==='BUY' ? 'rgba(0,230,118,.9)' : 'rgba(255,23,68,.9)';
+    const fcS = _tvChart.addLineSeries({ color:fcColor, lineWidth:2, title:'Forecast', priceLineVisible:false, lastValueVisible:true, crosshairMarkerVisible:true });
+    // Forecast starts from last candle
+    const lastCandle = tvCandles[tvCandles.length-1];
+    const tfMins = {1:1,3:3,5:5,15:15,30:30,60:60,240:240,'1D':1440,'1W':10080}[activeTF]||5;
+    const fcData = [];
+    r.mean.forEach((v,i)=>{
+      if(!v||isNaN(v)) return;
+      const ts = lastCandle.time + i*tfMins*60;
+      fcData.push({time:ts, value:v});
+    });
+    if(fcData.length) fcS.setData(fcData);
+    _tvOverlaySeries.push(fcS);
+
+    // Forecast upper/lower band
+    const bandColor = r.dir==='BUY' ? 'rgba(0,230,118,.18)' : 'rgba(255,23,68,.18)';
+    const upS = _tvChart.addLineSeries({ color:bandColor, lineWidth:1, lineStyle:3, title:'', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const dnS = _tvChart.addLineSeries({ color:bandColor, lineWidth:1, lineStyle:3, title:'', priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+    const upData=[], dnData=[];
+    r.upper.forEach((v,i)=>{ if(v&&!isNaN(v)) upData.push({time:lastCandle.time+i*tfMins*60, value:v}); });
+    r.lower.forEach((v,i)=>{ if(v&&!isNaN(v)) dnData.push({time:lastCandle.time+i*tfMins*60, value:v}); });
+    if(upData.length) upS.setData(upData);
+    if(dnData.length) dnS.setData(dnData);
+
+    // Individual forecast paths (faint)
+    (r.fPaths||[]).slice(0,8).forEach(path=>{
+      const ps2 = _tvChart.addLineSeries({ color: r.dir==='BUY'?'rgba(0,230,118,.06)':'rgba(255,23,68,.06)', lineWidth:1, priceLineVisible:false, lastValueVisible:false, crosshairMarkerVisible:false });
+      const pd=[];
+      path.forEach((v,i)=>{ if(v&&!isNaN(v)) pd.push({time:lastCandle.time+i*tfMins*60, value:v}); });
+      if(pd.length) ps2.setData(pd);
+      _tvOverlaySeries.push(ps2);
+    });
+
+    // TP markers on forecast mean
+    const tpDefs = [
+      {p:r.tp1, label:'TP1', color:'#69f0ae'},
+      {p:r.tp2, label:'TP2', color:'#00e676'},
+      {p:r.tp3, label:'TP3', color:'#00c853'},
+    ];
+    const fcMarkers=[];
+    tpDefs.forEach(tp=>{
+      if(!tp.p) return;
+      for(let i=1;i<r.mean.length;i++){
+        const prev=r.mean[i-1], cur=r.mean[i];
+        const hit=(r.dir==='BUY'&&prev<tp.p&&cur>=tp.p)||(r.dir==='SELL'&&prev>tp.p&&cur<=tp.p);
+        if(hit){
+          const ts=lastCandle.time+i*tfMins*60;
+          fcMarkers.push({time:ts, position: r.dir==='BUY'?'aboveBar':'belowBar', color:tp.color, shape:'circle', text:tp.label});
+          break;
+        }
+      }
+    });
+    if(fcMarkers.length) fcS.setMarkers(fcMarkers);
+    _tvOverlaySeries.push(upS, dnS, fcS);
+  }
+
+  // ── 17. Fit view to data ──
+  _tvChart.timeScale().fitContent();
 }
-// Hook into setTF
-const _origSetTF = setTF;
 
-
+// appStart() triggered by doLogin()
 </script>
 </body>
 </html>
