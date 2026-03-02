@@ -116,6 +116,15 @@ body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text
 .ms-news-m{background:rgba(255,152,0,.15);color:var(--orange);border:1px solid rgba(255,152,0,.3);}
 canvas#chart{flex:1;display:block;width:100%!important;min-height:0;cursor:crosshair;}
 canvas#chart.panning{cursor:grabbing;}
+/* TradingView iframe */
+#tvFrame{flex:1;display:none;width:100%;border:none;min-height:0;}
+#tvFrame.show{display:block;}
+canvas#chart.tv-hidden{display:none;}
+/* Chart mode toggle */
+.chart-mode-toggle{display:flex;gap:2px;margin-left:6px;}
+.cmt-btn{padding:2px 8px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--dim);font-family:'IBM Plex Mono',monospace;font-size:8px;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
+.cmt-btn:hover{border-color:var(--gold);color:var(--gold);}
+.cmt-btn.active{background:rgba(212,168,67,.15);border-color:var(--gold);color:var(--gold);}
 /* Zoom controls */
 .zoom-ctrl{position:absolute;bottom:32px;left:10px;display:flex;gap:3px;z-index:10;}
 .zb{width:22px;height:22px;border-radius:3px;background:rgba(6,12,24,.85);border:1px solid var(--border2);color:var(--dim);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;user-select:none;}
@@ -510,10 +519,15 @@ canvas#chart.panning{cursor:grabbing;}
       <span class="ch-pair" id="chPair">EUR/USD</span>
       <span class="ch-tf" id="chTf">5M</span>
       <span style="color:var(--dim);font-size:8px" id="chATR"></span>
+      <div class="chart-mode-toggle">
+        <button class="cmt-btn active" id="btnSkChart" onclick="switchChart('sk')">SK CHART</button>
+        <button class="cmt-btn" id="btnTvChart" onclick="switchChart('tv')">📈 TRADINGVIEW</button>
+      </div>
       <div class="ch-ms" id="chMS"></div>
       <button class="refbtn" onclick="doRefresh()">⟳ REFRESH</button>
     </div>
     <canvas id="chart"></canvas>
+    <iframe id="tvFrame" src="" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>
     <div class="forecast-dot" id="forecastDot"></div>
     <div class="zoom-ctrl">
       <div class="zb" onclick="zoomIn()" title="Zoom In">+</div>
@@ -3095,6 +3109,7 @@ function showToast(t,b){
 async function selectPair(sym){
   const pair=PAIRS.find(p=>p.sym===sym);if(!pair)return;
   activePair=pair;
+  _tvReloadIfActive();
   buildPairList();
   // Show sim data immediately while real data loads
   if(!cache[sym]||!cache[sym].candles){
@@ -3119,6 +3134,7 @@ async function setTF(btn,tf){
   activeTF=tf;
   document.querySelectorAll('.tf').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  _tvReloadIfActive();
   if(cache[activePair.sym]) cache[activePair.sym].fetchedAt=0;
   const d=await loadPairData(activePair,true);
   vpInit(d.candles.length);
@@ -3203,7 +3219,88 @@ async function appStart(){
   // Load real Twelve Data for EUR/USD
   await selectPair('EUR/USD');
 }
-// appStart() triggered by doLogin()
+// ================================================================
+//  TRADINGVIEW CHART INTEGRATION
+// ================================================================
+let _chartMode = 'sk'; // 'sk' or 'tv'
+
+const TV_SYMBOL_MAP = {
+  'EUR/USD':'FX:EURUSD','GBP/USD':'FX:GBPUSD','USD/JPY':'FX:USDJPY',
+  'USD/CHF':'FX:USDCHF','AUD/USD':'FX:AUDUSD','NZD/USD':'FX:NZDUSD',
+  'USD/CAD':'FX:USDCAD','EUR/GBP':'FX:EURGBP','EUR/JPY':'FX:EURJPY',
+  'EUR/CHF':'FX:EURCHF','EUR/AUD':'FX:EURAUD','GBP/JPY':'FX:GBPJPY',
+  'GBP/CHF':'FX:GBPCHF','GBP/AUD':'FX:GBPAUD','AUD/JPY':'FX:AUDJPY',
+  'NZD/JPY':'FX:NZDJPY','CAD/JPY':'FX:CADJPY','CHF/JPY':'FX:CHFJPY',
+  'USD/SGD':'FX:USDSGD','USD/ZAR':'FX:USDZAR','USD/MXN':'FX:USDMXN',
+  'USD/TRY':'FX:USDTRY','EUR/SEK':'FX:EURSEK','EUR/NOK':'FX:EURNOK',
+  'XAU/USD':'TVC:GOLD','XAG/USD':'TVC:SILVER','EUR/CAD':'FX:EURCAD',
+  'EUR/NZD':'FX:EURNZD','GBP/NZD':'FX:GBPNZD','GBP/CAD':'FX:GBPCAD',
+  'AUD/CHF':'FX:AUDCHF','AUD/CAD':'FX:AUDCAD','AUD/NZD':'FX:AUDNZD',
+  'CAD/CHF':'FX:CADCHF','USD/HKD':'FX:USDHKD','USD/PLN':'FX:USDPLN',
+  'USD/INR':'FX:USDINR','USD/LKR':'FX:USDLKR','EUR/TRY':'FX:EURTRY',
+  'GBP/ZAR':'FX:GBPZAR','XPT/USD':'TVC:PLATINUM'
+};
+
+const TV_TF_MAP = {
+  '1':'1','3':'3','5':'5','15':'15','30':'30','60':'60','240':'240','1D':'1D','1W':'1W'
+};
+
+function getTVUrl(sym, tf){
+  const tvSym = TV_SYMBOL_MAP[sym] || ('FX:' + sym.replace('/',''));
+  const tvTf = TV_TF_MAP[tf] || '60';
+  return `https://www.tradingview.com/widgetembed/?frameElementId=tvFrame&symbol=${encodeURIComponent(tvSym)}&interval=${tvTf}&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=03060d&studies=[]&theme=dark&style=1&timezone=Asia%2FColombo&withdateranges=1&showpopupbutton=1&studies_overrides=%7B%7D&overrides=%7B%22mainSeriesProperties.candleStyle.upColor%22%3A%22%2300e676%22%2C%22mainSeriesProperties.candleStyle.downColor%22%3A%22%23ff1744%22%2C%22mainSeriesProperties.candleStyle.borderUpColor%22%3A%22%2300e676%22%2C%22mainSeriesProperties.candleStyle.borderDownColor%22%3A%22%23ff1744%22%7D&enabled_features=[]&disabled_features=[]&locale=en&utm_source=skfx`;
+}
+
+function switchChart(mode){
+  _chartMode = mode;
+  const canvas = document.getElementById('chart');
+  const tvFrame = document.getElementById('tvFrame');
+  const fDot = document.getElementById('forecastDot');
+  const zCtrl = document.querySelector('.zoom-ctrl');
+  const zInfo = document.getElementById('zoomInfo');
+  const xInfo = document.getElementById('crosshairInfo');
+  const btnSk = document.getElementById('btnSkChart');
+  const btnTv = document.getElementById('btnTvChart');
+
+  if(mode === 'tv'){
+    // Load TradingView
+    const url = getTVUrl(activePair.sym, activeTF);
+    tvFrame.src = url;
+    canvas.classList.add('tv-hidden');
+    tvFrame.classList.add('show');
+    if(fDot) fDot.style.display='none';
+    if(zCtrl) zCtrl.style.display='none';
+    if(zInfo) zInfo.style.display='none';
+    if(xInfo) xInfo.style.display='none';
+    btnSk.classList.remove('active');
+    btnTv.classList.add('active');
+  } else {
+    // SK Chart
+    tvFrame.src = '';
+    tvFrame.classList.remove('show');
+    canvas.classList.remove('tv-hidden');
+    if(fDot) fDot.style.display='';
+    if(zCtrl) zCtrl.style.display='';
+    if(zInfo) zInfo.style.display='';
+    btnTv.classList.remove('active');
+    btnSk.classList.add('active');
+    markDirty();
+  }
+}
+
+// Auto-update TradingView chart when pair or TF changes
+const _origSelectPair = selectPair;
+// Patch: reload TV if in TV mode when pair changes
+function _tvReloadIfActive(){
+  if(_chartMode === 'tv'){
+    const url = getTVUrl(activePair.sym, activeTF);
+    document.getElementById('tvFrame').src = url;
+  }
+}
+// Hook into setTF
+const _origSetTF = setTF;
+
+
 </script>
 </body>
 </html>
