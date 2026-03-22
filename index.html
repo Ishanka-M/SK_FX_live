@@ -433,6 +433,99 @@ canvas#chart.panning{cursor:grabbing;}
 /* refbtn */
 .refbtn{padding:3px 9px;border-radius:3px;background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.2);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;transition:all .2s;}
 .refbtn:hover{background:rgba(212,168,67,.16);}
+
+/* ══ BEST TRADES PANEL ════════════════════════════════ */
+.bt-card{margin:5px 8px;border-radius:6px;overflow:hidden;border:1px solid var(--border2);background:var(--bg3);transition:transform .15s,box-shadow .15s;cursor:pointer;}
+.bt-card:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.6);}
+.bt-priority-bar{height:3px;}
+.bt-pri-s{background:linear-gradient(90deg,#ff1744,#ff6b6b);}
+.bt-pri-a{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.bt-pri-b{background:linear-gradient(90deg,var(--blue),var(--blue2));}
+.bt-header{display:flex;align-items:center;gap:8px;padding:8px 10px 6px;border-bottom:1px solid var(--border);}
+.bt-rank{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:'Syncopate',sans-serif;flex-shrink:0;}
+.bt-rank-1{background:rgba(212,168,67,.25);color:var(--gold2);border:1px solid rgba(212,168,67,.5);}
+.bt-rank-2{background:rgba(184,208,232,.1);color:var(--text);border:1px solid var(--border2);}
+.bt-rank-3{background:rgba(41,182,246,.1);color:var(--blue);border:1px solid rgba(41,182,246,.25);}
+.bt-rank-n{background:rgba(30,48,69,.3);color:var(--dim2);border:1px solid var(--border);}
+.bt-dir-badge{padding:2px 7px;border-radius:3px;font-family:'Syncopate',sans-serif;font-size:8px;font-weight:700;letter-spacing:1px;flex-shrink:0;}
+.bt-buy{background:rgba(0,230,118,.15);color:var(--green);border:1px solid rgba(0,230,118,.3);}
+.bt-sell{background:rgba(255,23,68,.15);color:var(--red);border:1px solid rgba(255,23,68,.3);}
+.bt-sym{font-size:13px;font-weight:700;color:var(--text);}
+.bt-tf-badge{font-size:7px;padding:1px 5px;border-radius:2px;background:rgba(41,182,246,.12);border:1px solid rgba(41,182,246,.2);color:var(--blue);letter-spacing:1px;}
+.bt-conf{font-size:10px;font-weight:700;margin-left:auto;}
+.bt-conf.b{color:var(--green);}.bt-conf.s{color:var(--red);}
+.bt-hp-star{color:var(--gold);font-size:11px;animation:blink 2s infinite;}
+
+/* Distance meter */
+.bt-dist-section{padding:6px 10px;background:rgba(2,5,14,.5);border-bottom:1px solid var(--border);}
+.bt-dist-label{font-size:7px;letter-spacing:2px;color:var(--dim2);text-transform:uppercase;margin-bottom:4px;}
+.bt-dist-bar-wrap{position:relative;height:12px;background:var(--border);border-radius:6px;overflow:hidden;margin-bottom:3px;}
+.bt-dist-fill{height:100%;border-radius:6px;transition:width .8s ease;}
+.bt-dist-fill.close{background:linear-gradient(90deg,var(--green),var(--green2));}
+.bt-dist-fill.mid{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.bt-dist-fill.far{background:linear-gradient(90deg,var(--orange),#ffb74d);}
+.bt-dist-marker{position:absolute;top:0;bottom:0;width:2px;background:var(--text);opacity:.6;border-radius:1px;}
+.bt-dist-numbers{display:flex;justify-content:space-between;font-size:7px;color:var(--dim2);}
+.bt-dist-live{color:var(--cyan);font-weight:700;}
+.bt-dist-entry{color:var(--gold);font-weight:700;}
+.bt-dist-pips{font-size:10px;font-weight:700;color:var(--text);text-align:center;margin-top:2px;}
+.bt-dist-pips .pip-num{color:var(--cyan);}
+.bt-dist-pips .pip-dir{font-size:8px;color:var(--dim2);}
+
+/* Entry time */
+.bt-time-row{display:flex;gap:6px;padding:5px 10px;border-bottom:1px solid var(--border);align-items:center;}
+.bt-time-icon{font-size:12px;}
+.bt-time-label{font-size:7px;color:var(--dim2);letter-spacing:1px;}
+.bt-time-val{font-size:10px;font-weight:700;color:var(--slst);}
+.bt-session-pill{margin-left:auto;font-size:7px;padding:1px 6px;border-radius:8px;letter-spacing:.5px;font-weight:600;}
+.bt-sess-london{background:rgba(41,182,246,.12);border:1px solid rgba(41,182,246,.3);color:var(--blue);}
+.bt-sess-ny{background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.25);color:var(--green);}
+.bt-sess-overlap{background:rgba(255,152,0,.12);border:1px solid rgba(255,152,0,.3);color:var(--orange);}
+.bt-sess-tokyo{background:rgba(179,157,219,.1);border:1px solid rgba(179,157,219,.25);color:var(--purple);}
+
+/* Entry sequence */
+.bt-sequence{padding:6px 10px 4px;border-bottom:1px solid var(--border);}
+.bt-seq-title{font-size:7px;letter-spacing:2px;color:var(--dim2);text-transform:uppercase;margin-bottom:5px;}
+.bt-seq-steps{display:flex;flex-direction:column;gap:3px;}
+.bt-seq-step{display:flex;align-items:flex-start;gap:6px;font-size:7px;}
+.bt-seq-num{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.bt-seq-done{background:rgba(0,230,118,.2);color:var(--green);border:1px solid rgba(0,230,118,.3);}
+.bt-seq-wait{background:rgba(58,85,112,.3);color:var(--dim2);border:1px solid var(--border2);}
+.bt-seq-active{background:rgba(212,168,67,.2);color:var(--gold);border:1px solid rgba(212,168,67,.4);animation:blink 1.5s infinite;}
+.bt-seq-text{flex:1;color:var(--text);line-height:1.5;}
+.bt-seq-text.dim{color:var(--dim2);}
+
+/* Levels row */
+.bt-levels{display:grid;grid-template-columns:repeat(4,1fr);padding:5px 8px;gap:3px;}
+.bt-lv{text-align:center;}
+.bt-lv-l{font-size:6px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim2);margin-bottom:1px;}
+.bt-lv-v{font-size:9px;font-weight:600;}
+.bt-lv.e .bt-lv-v{color:var(--gold2);}
+.bt-lv.sl .bt-lv-v{color:var(--red);}
+.bt-lv.tp .bt-lv-v{color:var(--green);}
+.bt-lv.rr .bt-lv-v{color:var(--blue);}
+
+/* Capture guide */
+.bt-capture{padding:5px 10px 7px;background:rgba(212,168,67,.03);border-top:1px solid rgba(212,168,67,.08);}
+.bt-cap-title{font-size:7px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:4px;}
+.bt-cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.bt-cap-item{background:rgba(2,5,14,.6);border:1px solid var(--border);border-radius:3px;padding:4px 6px;}
+.bt-cap-key{font-size:6px;color:var(--dim2);letter-spacing:.5px;margin-bottom:1px;}
+.bt-cap-val{font-size:8px;color:var(--text);line-height:1.4;}
+
+/* Best trades header */
+.bt-panel-header{padding:7px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.bt-panel-title{font-size:7px;letter-spacing:2px;color:var(--dim2);text-transform:uppercase;}
+.bt-panel-count{font-size:9px;color:var(--gold);font-weight:700;}
+.bt-scan-btn{padding:2px 8px;border-radius:3px;background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.25);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+.bt-scan-btn:hover{background:rgba(212,168,67,.18);}
+.bt-filter-bar{padding:4px 9px;border-bottom:1px solid var(--border);display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.bt-flt{padding:2px 7px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--dim2);transition:all .2s;}
+.bt-flt.on{background:rgba(212,168,67,.1);border-color:var(--gold);color:var(--gold);}
+.bt-summary-bar{display:flex;gap:8px;padding:4px 10px;font-size:7px;color:var(--dim2);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.bt-sum-item{display:flex;align-items:center;gap:3px;}
+.bt-sum-dot{width:5px;height:5px;border-radius:50%;}
+.empty-bt{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px;gap:8px;color:var(--muted);font-size:10px;text-align:center;}
 </style>
 </head>
 <body>
@@ -566,6 +659,7 @@ canvas#chart.panning{cursor:grabbing;}
       <div class="rpt active" onclick="rpTab(this,'Signal')">Signal</div>
       <div class="rpt" onclick="rpTab(this,'News')" id="newsTabBtn">News<span class="rpt-badge" id="newsBadge" style="background:var(--orange)">0</span></div>
       <div class="rpt" onclick="rpTab(this,'Notif')">Setups<span class="rpt-badge" id="notifBadge">0</span></div>
+      <div class="rpt" onclick="rpTab(this,'BestTrades')" id="btTabBtn" style="position:relative;">Best<span class="rpt-badge" id="btBadge" style="background:var(--gold);color:#000;">0</span></div>
     </div>
 
     <!-- SIGNAL TAB -->
@@ -708,8 +802,31 @@ canvas#chart.panning{cursor:grabbing;}
         <div class="empty-notif"><div style="font-size:22px">📡</div><div>Click "Scan All" to find upcoming setups</div></div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- BEST TRADES TAB -->
+    <div class="rp-body" id="tabBestTrades">
+      <div class="bt-panel-header">
+        <div>
+          <div class="bt-panel-title">🏆 Best Trades — 15M+ Only</div>
+          <div style="font-size:7px;color:var(--dim2);margin-top:2px;letter-spacing:.5px;">High-probability · Entry-ready · Sorted by score</div>
+        </div>
+        <button class="bt-scan-btn" onclick="buildBestTrades()">⟳ Refresh</button>
+      </div>
+      <div class="bt-filter-bar">
+        <span class="flt-lbl">FILTER:</span>
+        <div class="bt-flt on" id="btFltHp" onclick="toggleBtFilter('hp')">★ High Prob</div>
+        <div class="bt-flt on" id="btFltMtf" onclick="toggleBtFilter('mtf')">MTF Aligned</div>
+        <div class="bt-flt" id="btFltKz" onclick="toggleBtFilter('kz')">Kill Zone</div>
+      </div>
+      <div class="bt-summary-bar" id="btSummaryBar">
+        <span>Scan to load best trades...</span>
+      </div>
+      <div id="btList">
+        <div class="empty-bt"><div style="font-size:24px">🏆</div><div>Click Refresh to load 15M+ Best Trades</div><div style="font-size:8px;color:var(--dim);margin-top:4px">Filtered · Ranked · Entry-ready</div></div>
+      </div>
+    </div>
+  </div><!-- /right-panel -->
+</div><!-- /workspace -->
 
 <!-- STATUS BAR -->
 <div class="statusbar">
@@ -2304,6 +2421,7 @@ function rpTab(btn,tab){
   document.querySelectorAll('.rp-body').forEach(b=>b.classList.remove('show'));
   if(btn)btn.classList.add('active');
   document.getElementById('tab'+tab).classList.add('show');
+  if(tab==='BestTrades') buildBestTrades();
 }
 async function doRefresh(){
   if(cache[activePair.sym])cache[activePair.sym].fetchedAt=0;
@@ -2381,9 +2499,233 @@ async function appStart(){
   document.getElementById('tabSignal').classList.add('show');
   setApiStatus('live');
   await selectPair('EUR/USD');
+  setTimeout(buildBestTrades, 1500);
 }
 
 loginTick();
+
+// ══ BEST TRADES ENGINE ══════════════════════════════════════════
+let _btFilters = { hp: true, mtf: true, kz: false };
+
+function toggleBtFilter(key){
+  _btFilters[key] = !_btFilters[key];
+  const id = 'btFlt'+key.charAt(0).toUpperCase()+key.slice(1);
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('on', _btFilters[key]);
+  buildBestTrades();
+}
+
+function getSLSTHour(){
+  const s = getSLSTTime(); return s.getHours() + s.getMinutes()/60;
+}
+
+function getBtSession(slstH){
+  const h = Math.floor(slstH);
+  if(h>=16&&h<18) return {label:'Overlap',cls:'bt-sess-overlap'};
+  if(h>=13&&h<18) return {label:'London',cls:'bt-sess-london'};
+  if(h>=18&&h<22) return {label:'NY Open',cls:'bt-sess-ny'};
+  if(h>=4&&h<9)   return {label:'Tokyo',cls:'bt-sess-tokyo'};
+  return {label:'Pre-Market',cls:'bt-sess-london'};
+}
+
+function getEntryTimeStr(result){
+  const slst = getSLSTTime();
+  const slstH = slst.getHours(), slstM = slst.getMinutes();
+  const nowMins = slstH*60+slstM;
+  const pad = n=>n.toString().padStart(2,'0');
+  if(result.isKillzone) return {time:`⚡ NOW — Kill Zone Active (${pad(slstH)}:${pad(slstM)})`, sess:getBtSession(slstH+slstM/60)};
+  // Key sessions in SLST: London 13:30, Overlap 16:00, NY 18:30
+  const sessions=[{h:13,m:30,lbl:'London'},{h:16,m:0,lbl:'Overlap'},{h:18,m:30,lbl:'NY Open'}];
+  let best=null, minDiff=999999;
+  sessions.forEach(s=>{
+    let diff=(s.h*60+s.m)-nowMins;
+    if(diff<0) diff+=1440;
+    if(diff<minDiff){minDiff=diff;best=s;}
+  });
+  const inMin=minDiff;
+  const timeStr = inMin<2 ? '⚡ NOW' : inMin<60 ? `~${inMin}m → ${pad(best.h)}:${pad(best.m)} SLST` : `${pad(best.h)}:${pad(best.m)} SLST (~${Math.round(inMin/60)}h ${inMin%60}m)`;
+  return {time:timeStr, sess:getBtSession(best.h+best.m/60)};
+}
+
+function getDistancePips(livePrice, entryPrice, pip){
+  if(!livePrice||!entryPrice) return {pips:'0.0',pct:50,dir:'—',raw:0};
+  const diff = entryPrice - livePrice;
+  const pips = Math.abs(diff) / pip;
+  const pct = Math.min(95, Math.max(5, 100 - pips/40*100));
+  const dir = diff>0 ? '▲ Price needs to rise to entry' : '▼ Price needs to fall to entry';
+  return {pips: pips.toFixed(1), pct, dir, raw:diff};
+}
+
+function getEntrySequence(result, isBuy){
+  const steps=[];
+  const biasOk = result.smcBias===(isBuy?'BULLISH':'BEARISH');
+  steps.push({done:biasOk, active:!biasOk, text:`HTF Bias: ${result.smcBias}${biasOk?' ✓':' — wait for '+(isBuy?'BULLISH':'BEARISH')}`});
+  const structOk = isBuy?(result.bosUp||result.chochB):(result.bosDown||result.chochS);
+  steps.push({done:structOk, active:!structOk&&biasOk, text:`Structure: ${structOk?(isBuy?'BOS↑/CHoCH bullish ✓':'BOS↓/CHoCH bearish ✓'):(isBuy?'Await BOS↑ or bullish CHoCH':'Await BOS↓ or bearish CHoCH')}`});
+  const liqOk = isBuy?result.lsL:result.lsH;
+  steps.push({done:liqOk, active:!liqOk&&structOk, text:`Liq Sweep: ${liqOk?(isBuy?'SSL swept ✓':'BSL swept ✓'):(isBuy?'Watch for SSL sweep below':'Watch for BSL sweep above')}`});
+  const obOk = result.inOB&&(isBuy?result.obB:!result.obB);
+  steps.push({done:obOk, active:!obOk&&liqOk, text:`Order Block: ${obOk?'Price in OB ✓':(isBuy?'Wait for price to tap Bull OB':'Wait for price to tap Bear OB')}`});
+  const pdOk = isBuy?result.disc:result.prem;
+  steps.push({done:pdOk, active:!pdOk&&obOk, text:`P/D Zone: ${pdOk?(isBuy?'Discount zone ✓':'Premium zone ✓'):(isBuy?'Wait: price in discount zone':'Wait: price in premium zone')}`});
+  const allReady = biasOk&&structOk&&liqOk&&obOk;
+  steps.push({done:false, active:allReady, text:allReady?`🎯 ENTER ${isBuy?'BUY':'SELL'} — All SMC conditions confirmed!`:`🎯 Enter on ${isBuy?'15M bullish CHoCH close above OB':'15M bearish CHoCH close below OB'}`});
+  return steps;
+}
+
+function buildBestTradeCard(pair, result, rank, mtfData){
+  const isBuy = result.dir==='BUY';
+  const p = pair.pip;
+  const livePrice = cache[pair.sym]?.price || result.price;
+  const priCls = rank===0?'bt-pri-s':rank<=2?'bt-pri-a':'bt-pri-b';
+  const rankCls = rank===0?'bt-rank-1':rank===1?'bt-rank-2':rank===2?'bt-rank-3':'bt-rank-n';
+  const dirCls = isBuy?'bt-buy':'bt-sell';
+  const confCls = isBuy?'b':'s';
+  const dist = getDistancePips(livePrice, result.entry, p);
+  const distFillCls = parseFloat(dist.pips)<10?'close':parseFloat(dist.pips)<25?'mid':'far';
+  const entryTm = getEntryTimeStr(result);
+  const rr = result.sl&&result.tp3?(Math.abs(result.tp3-result.entry)/Math.abs(result.sl-result.entry)).toFixed(1):'—';
+  const seq = getEntrySequence(result, isBuy);
+  const doneCount = seq.filter(s=>s.done).length;
+  const readyPct = Math.round(doneCount/seq.length*100);
+  const hpStar = result.isHighProb?'<span class="bt-hp-star">★</span>':'';
+  const tradeType = result.isSwing?'SWING':result.isShort?'SCALP':'INTRADAY';
+
+  let captureEntry, captureSize, captureSL, captureHold;
+  if(result.isSwing){
+    captureEntry='Wait for 1H OB tap + 15M CHoCH confirmation candle close';
+    captureSize='50% at entry, add 50% on W3 pullback (W4 zone)';
+    captureSL=`SL below/above OB: ${fP(result.sl,p)} — fixed, do not move early`;
+    captureHold='Hold 1–5 days. Scale out: T1(40%), T2(35%), T3(25%). Trail after T2.';
+  } else if(result.isShort){
+    captureEntry='5M CHoCH + OB tap — fast execution. Use limit order at OB level.';
+    captureSize='Full risk size — keep tight (0.5–1% account risk max)';
+    captureSL=`Hard SL: ${fP(result.sl,p)} — max 10–15 pips above/below entry`;
+    captureHold='Exit at T1 (50%) + T2 (50%). Hold max 2–4 hours.';
+  } else {
+    captureEntry='15M OB tap + liquidity sweep + CHoCH candle confirmation';
+    captureSize='Full size at entry. Do not average in.';
+    captureSL=`SL at: ${fP(result.sl,p)} — below/above OB zone`;
+    captureHold='T1 at 50%, leave rest to T2/T3. Review each session open.';
+  }
+
+  return `<div class="bt-card" onclick="selectPair('${pair.sym}');rpTab(document.querySelector('.rpt'),'Signal')">
+  <div class="bt-priority-bar ${priCls}"></div>
+  <div class="bt-header">
+    <div class="bt-rank ${rankCls}">${rank+1}</div>
+    <div class="bt-dir-badge ${dirCls}">${result.dir}</div>
+    <div style="flex:1;min-width:0">
+      <div class="bt-sym">${pair.sym} ${hpStar}</div>
+      <div class="bt-tf-badge">${activeTF}${activeTF==='D'?'':'M'} · ${tradeType}</div>
+    </div>
+    <div style="text-align:right">
+      <div class="bt-conf ${confCls}">${result.str}%</div>
+      <div style="font-size:6px;color:var(--dim2)">CONFIDENCE</div>
+    </div>
+  </div>
+
+  <div class="bt-dist-section">
+    <div class="bt-dist-label">📍 Live Price → Entry Distance</div>
+    <div class="bt-dist-bar-wrap">
+      <div class="bt-dist-fill ${distFillCls}" style="width:${dist.pct}%"></div>
+    </div>
+    <div class="bt-dist-numbers">
+      <span class="bt-dist-live">LIVE: ${fP(livePrice,p)}</span>
+      <span class="bt-dist-entry">ENTRY: ${fP(result.entry,p)}</span>
+    </div>
+    <div class="bt-dist-pips"><span class="pip-num">${dist.pips}</span> pips away &nbsp;<span class="pip-dir">${dist.dir}</span></div>
+  </div>
+
+  <div class="bt-time-row">
+    <span class="bt-time-icon">⏰</span>
+    <span class="bt-time-label">BEST TIME:</span>
+    <span class="bt-time-val">${entryTm.time}</span>
+    <span class="bt-session-pill ${entryTm.sess.cls}">${entryTm.sess.label}</span>
+  </div>
+
+  <div class="bt-sequence">
+    <div class="bt-seq-title">📋 Entry Checklist &nbsp;<span style="color:var(--gold);font-size:8px">${doneCount}/${seq.length} done · ${readyPct}% ready</span></div>
+    <div class="bt-seq-steps">
+      ${seq.map((s,i)=>`<div class="bt-seq-step">
+        <div class="bt-seq-num ${s.done?'bt-seq-done':s.active?'bt-seq-active':'bt-seq-wait'}">${s.done?'✓':s.active?'▶':i+1}</div>
+        <div class="bt-seq-text ${s.done||s.active?'':'dim'}">${s.text}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <div class="bt-levels">
+    <div class="bt-lv e"><div class="bt-lv-l">Entry</div><div class="bt-lv-v">${fP(result.entry,p)}</div></div>
+    <div class="bt-lv sl"><div class="bt-lv-l">Stop Loss</div><div class="bt-lv-v">${fP(result.sl,p)}</div></div>
+    <div class="bt-lv tp"><div class="bt-lv-l">TP3 Target</div><div class="bt-lv-v">${fP(result.tp3,p)}</div></div>
+    <div class="bt-lv rr"><div class="bt-lv-l">R:R Ratio</div><div class="bt-lv-v">1:${rr}</div></div>
+  </div>
+
+  <div class="bt-capture">
+    <div class="bt-cap-title">🎯 How to Capture This Trade</div>
+    <div class="bt-cap-grid">
+      <div class="bt-cap-item"><div class="bt-cap-key">ENTRY METHOD</div><div class="bt-cap-val">${captureEntry}</div></div>
+      <div class="bt-cap-item"><div class="bt-cap-key">POSITION SIZE</div><div class="bt-cap-val">${captureSize}</div></div>
+      <div class="bt-cap-item"><div class="bt-cap-key">STOP LOSS PLAN</div><div class="bt-cap-val">${captureSL}</div></div>
+      <div class="bt-cap-item"><div class="bt-cap-key">HOLD & EXIT PLAN</div><div class="bt-cap-val">${captureHold}</div></div>
+    </div>
+    ${mtfData?`<div style="margin-top:5px;font-size:7px;padding:3px 5px;background:rgba(2,5,14,.6);border-radius:3px;border:1px solid var(--border)">MTF Align: <span style="color:${mtfData.align==='bull'?'var(--green)':mtfData.align==='bear'?'var(--red)':'var(--dim2)'};font-weight:700">${mtfData.lbl}</span> &nbsp;|&nbsp; Score: <span style="color:var(--gold)">${mtfData.score}/5 TFs confirmed</span></div>`:''}
+  </div>
+</div>`;
+}
+
+function buildBestTrades(){
+  PAIRS.forEach(pair=>{
+    if(!cache[pair.sym]){
+      const price=pair.base*(1+(Math.random()-.5)*.003);
+      const candles=genCandles(price,pair);
+      cache[pair.sym]={price,chg:(Math.random()-.5)*0.4,candles,result:skAnalyze(candles,price,pair),fetchedAt:0,isLive:false,spread:pair.spread};
+    }
+  });
+
+  const mtfMap={};
+  PAIRS.forEach(p=>{ if(cache[p.sym]) mtfMap[p.sym]=getMtfAlign(getMtfResults(p,cache[p.sym].candles)); });
+
+  const candidates = PAIRS.filter(p=>{
+    const d=cache[p.sym]; if(!d||d.result.dir==='WAIT') return false;
+    if(d.result.str<55) return false;
+    if(!d.result.isSwing&&!d.result.isHighProb&&d.result.str<65) return false;
+    if(_btFilters.hp&&!d.result.isHighProb&&d.result.str<75) return false;
+    if(_btFilters.mtf){const a=mtfMap[p.sym];if(!a)return false;if(d.result.dir==='BUY'&&a.align!=='bull')return false;if(d.result.dir==='SELL'&&a.align!=='bear')return false;}
+    if(_btFilters.kz&&!d.result.isKillzone) return false;
+    return true;
+  }).sort((a,b)=>{
+    const ra=cache[a.sym].result,rb=cache[b.sym].result;
+    const sa=ra.str+(ra.isHighProb?20:0)+(ra.isSwing?10:0)+(ra.isKillzone?15:0)+(ra.inOB?8:0)+(ra.lsL||ra.lsH?7:0);
+    const sb=rb.str+(rb.isHighProb?20:0)+(rb.isSwing?10:0)+(rb.isKillzone?15:0)+(rb.inOB?8:0)+(rb.lsL||rb.lsH?7:0);
+    return sb-sa;
+  }).slice(0,8);
+
+  document.getElementById('btBadge').textContent=candidates.length;
+
+  const buys=candidates.filter(p=>cache[p.sym].result.dir==='BUY').length;
+  const sells=candidates.length-buys;
+  const hp=candidates.filter(p=>cache[p.sym].result.isHighProb).length;
+  const kz=candidates.filter(p=>cache[p.sym].result.isKillzone).length;
+  document.getElementById('btSummaryBar').innerHTML=`
+    <div class="bt-sum-item"><div class="bt-sum-dot" style="background:var(--green)"></div><span>${buys} BUY</span></div>
+    <div class="bt-sum-item"><div class="bt-sum-dot" style="background:var(--red)"></div><span>${sells} SELL</span></div>
+    <div class="bt-sum-item"><div class="bt-sum-dot" style="background:var(--gold)"></div><span>${hp} High Prob</span></div>
+    ${kz?`<div class="bt-sum-item"><div class="bt-sum-dot" style="background:var(--cyan)"></div><span>${kz} Kill Zone</span></div>`:''}
+    <div class="bt-sum-item" style="margin-left:auto"><span style="color:var(--dim2)">15M+ · Ranked</span></div>
+  `;
+
+  if(!candidates.length){
+    document.getElementById('btList').innerHTML='<div class="empty-bt"><div style="font-size:26px">🔍</div><div>No 15M+ setups match current filters</div><div style="font-size:8px;color:var(--dim);margin-top:6px">Try relaxing filters or wait for next session open<br>London: 13:30 SLST · NY: 18:30 SLST</div></div>';
+    return;
+  }
+
+  document.getElementById('btList').innerHTML=candidates.map((p,i)=>buildBestTradeCard(p,cache[p.sym].result,i,mtfMap[p.sym])).join('');
+}
+
+// Auto-refresh best trades every 60s if tab is visible
+setInterval(()=>{
+  if(document.getElementById('tabBestTrades')?.classList.contains('show')) buildBestTrades();
+},60000);
 </script>
 </body>
 </html>
