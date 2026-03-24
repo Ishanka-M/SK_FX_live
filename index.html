@@ -2726,6 +2726,274 @@ function buildBestTrades(){
 setInterval(()=>{
   if(document.getElementById('tabBestTrades')?.classList.contains('show')) buildBestTrades();
 },60000);
+
+/* ══════════════════════════════════════════════════════
+   SK·FX  NOTIFICATION SYSTEM  v1.0
+   ══════════════════════════════════════════════════════ */
+
+const SKFX_NOTIF = (() => {
+  let _perm = Notification.permission; // 'default' | 'granted' | 'denied'
+  let _queue = [];
+  let _history = [];
+  let _muted = false;
+  let _lastSig = {};          // sym -> last signal dir sent
+  let _lastHP  = {};          // sym -> last high-prob alert time
+  let _lastKZ  = null;        // last kill-zone alert time
+
+  /* ── Icons as data-URI so no external dependency ── */
+  const ICON_BUY  = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="8" fill="%2302050e"/><text x="32" y="44" font-size="36" text-anchor="middle" fill="%2300e676">▲</text></svg>';
+  const ICON_SELL = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="8" fill="%2302050e"/><text x="32" y="44" font-size="36" text-anchor="middle" fill="%23ff1744">▼</text></svg>';
+  const ICON_INFO = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="8" fill="%2302050e"/><text x="32" y="44" font-size="36" text-anchor="middle" fill="%23d4a843">◆</text></svg>';
+
+  /* ── Request permission on first call ── */
+  async function _ensurePerm() {
+    if (_perm === 'granted') return true;
+    if (_perm === 'denied')  return false;
+    _perm = await Notification.requestPermission();
+    _updateBtnUI();
+    return _perm === 'granted';
+  }
+
+  /* ── Fire a single browser notification ── */
+  async function send(title, body, opts = {}) {
+    if (_muted) return;
+    const ok = await _ensurePerm();
+    const entry = { title, body, time: Date.now(), ...opts };
+    _history.unshift(entry);
+    if (_history.length > 50) _history.length = 50;
+    _renderHistory();
+
+    if (!ok) return;                    // no permission
+    if (document.hasFocus()) return;    // tab is active, skip OS popup
+
+    const icon = opts.icon || ICON_INFO;
+    const n = new Notification(title, {
+      body,
+      icon,
+      badge: ICON_INFO,
+      tag: opts.tag || title,
+      renotify: true,
+      silent: false,
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+    setTimeout(() => n.close(), opts.ttl || 8000);
+  }
+
+  /* ══ Smart signal alert — fires when a new BUY/SELL appears ══ */
+  function checkSignalAlert(pair, result) {
+    if (!result || result.dir === 'WAIT') return;
+    const prev = _lastSig[pair.sym];
+    if (prev === result.dir) return;            // same direction, skip
+    _lastSig[pair.sym] = result.dir;
+
+    const conf = result.str;
+    if (conf < 60) return;                      // only 60%+ signals
+
+    const icon = result.dir === 'BUY' ? ICON_BUY : ICON_SELL;
+    const hp   = result.isHighProb ? ' 🔥 HIGH PROB' : '';
+    const kz   = result.isKillzone ? ' ⚡ KILL ZONE' : '';
+    send(
+      `SK·FX  ${result.dir}  ${pair.sym}${hp}${kz}`,
+      `Confidence ${conf}% · Entry ${fP(result.entry, pair.pip)} · SL ${fP(result.sl, pair.pip)} · TP3 ${fP(result.tp3, pair.pip)}`,
+      { icon, tag: `sig-${pair.sym}` }
+    );
+  }
+
+  /* ══ High-Prob batch alert (max once per 5 min) ══ */
+  function checkHighProbAlert(candidates) {
+    const hp = candidates.filter(p => cache[p.sym]?.result?.isHighProb);
+    if (!hp.length) return;
+    const now = Date.now();
+    if (_lastHP._t && now - _lastHP._t < 5 * 60 * 1000) return;
+    _lastHP._t = now;
+    const names = hp.map(p => `${p.sym}(${cache[p.sym].result.dir})`).join(', ');
+    send(
+      `SK·FX ▸ ${hp.length} High-Prob Setup${hp.length > 1 ? 's' : ''} Found`,
+      names,
+      { icon: ICON_INFO, tag: 'hp-batch', ttl: 12000 }
+    );
+  }
+
+  /* ══ Kill Zone open alert ══ */
+  function checkKillZoneAlert(sessName) {
+    const now = Date.now();
+    if (_lastKZ && now - _lastKZ < 55 * 60 * 1000) return; // once per hour
+    _lastKZ = now;
+    send(
+      `⚡ Kill Zone Open — ${sessName}`,
+      'Best liquidity window — review setups now.',
+      { icon: ICON_INFO, tag: 'kz-open', ttl: 15000 }
+    );
+  }
+
+  /* ══ News High-Impact alert ══ */
+  function newsAlert(eventName, currency, timeLabel) {
+    send(
+      `📰 HIGH IMPACT NEWS — ${currency}`,
+      `${eventName} @ ${timeLabel} · Consider reducing exposure.`,
+      { icon: ICON_INFO, tag: `news-${currency}-${timeLabel}`, ttl: 20000 }
+    );
+  }
+
+  /* ── UI helpers ── */
+  function _updateBtnUI() {
+    const btn = document.getElementById('skfxNotifBtn');
+    if (!btn) return;
+    if (_perm === 'denied') {
+      btn.title = 'Notifications blocked in browser settings';
+      btn.style.opacity = '0.4';
+    } else if (_perm === 'granted') {
+      btn.style.color = _muted ? 'var(--dim2)' : 'var(--green)';
+      btn.title = _muted ? 'Notifications muted — click to unmute' : 'Notifications ON — click to mute';
+    }
+  }
+
+  function toggleMute() {
+    _muted = !_muted;
+    _updateBtnUI();
+    _inlineToast(_muted ? '🔕 Notifications muted' : '🔔 Notifications active');
+  }
+
+  function _inlineToast(msg) {
+    let t = document.getElementById('skfxToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'skfxToast';
+      Object.assign(t.style, {
+        position:'fixed', bottom:'18px', left:'50%', transform:'translateX(-50%)',
+        background:'rgba(5,11,23,.95)', border:'1px solid var(--border2)',
+        color:'var(--text)', fontFamily:'IBM Plex Mono,monospace',
+        fontSize:'11px', padding:'7px 18px', borderRadius:'6px',
+        zIndex:'9999', letterSpacing:'.5px', whiteSpace:'nowrap',
+        transition:'opacity .3s',
+      });
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._tid);
+    t._tid = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+  }
+
+  function _renderHistory() {
+    const el = document.getElementById('skfxNotifHistory');
+    if (!el) return;
+    if (!_history.length) { el.innerHTML = '<div style="color:var(--dim);font-size:9px;text-align:center;padding:12px">No alerts yet</div>'; return; }
+    el.innerHTML = _history.slice(0, 20).map(h => {
+      const d = new Date(h.time);
+      const t = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
+      return `<div style="padding:5px 10px;border-bottom:1px solid var(--border);font-size:8px;display:flex;gap:8px;align-items:flex-start">
+        <span style="color:var(--gold);white-space:nowrap;flex-shrink:0">${t}</span>
+        <div><div style="color:var(--text);font-weight:600;margin-bottom:1px">${h.title}</div>
+        <div style="color:var(--dim2)">${h.body}</div></div></div>`;
+    }).join('');
+  }
+
+  /* ── Inject the notification button into the topbar ── */
+  function _injectUI() {
+    const topbar = document.querySelector('.topbar');
+    if (!topbar) return;
+
+    /* Bell button */
+    const btn = document.createElement('button');
+    btn.id = 'skfxNotifBtn';
+    btn.title = 'Enable notifications';
+    btn.style.cssText = `background:none;border:1px solid var(--border2);border-radius:3px;
+      color:var(--dim2);font-size:14px;width:28px;height:28px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;transition:all .15s;
+      font-family:sans-serif;flex-shrink:0;`;
+    btn.textContent = '🔔';
+    btn.onclick = async () => {
+      if (_perm === 'default') {
+        await _ensurePerm();
+        _inlineToast('🔔 Notifications enabled!');
+      } else if (_perm === 'granted') {
+        toggleMute();
+      } else {
+        _inlineToast('⚠ Notifications blocked — check browser settings');
+      }
+      _renderNotifPanel();
+    };
+    topbar.appendChild(btn);
+
+    /* Sliding history panel */
+    const panel = document.createElement('div');
+    panel.id = 'skfxNotifPanel';
+    panel.style.cssText = `position:fixed;top:46px;right:0;width:320px;
+      background:var(--bg2);border-left:1px solid var(--border2);border-bottom:1px solid var(--border2);
+      z-index:999;display:none;flex-direction:column;max-height:420px;overflow:hidden;
+      box-shadow:-4px 4px 24px rgba(0,0,0,.6);`;
+    panel.innerHTML = `
+      <div style="padding:8px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <span style="font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--dim2)">ALERT HISTORY</span>
+        <div style="display:flex;gap:6px">
+          <button id="skfxMuteBtn" onclick="SKFX_NOTIF.toggleMute()" style="background:none;border:1px solid var(--border2);border-radius:3px;color:var(--dim2);font-size:9px;padding:2px 7px;cursor:pointer;font-family:IBM Plex Mono,monospace;letter-spacing:.5px">MUTE</button>
+          <button onclick="document.getElementById('skfxNotifPanel').style.display='none'" style="background:none;border:none;color:var(--dim2);font-size:14px;cursor:pointer;line-height:1">×</button>
+        </div>
+      </div>
+      <div id="skfxNotifHistory" style="overflow-y:auto;flex:1"></div>`;
+    document.body.appendChild(panel);
+
+    btn.addEventListener('click', _renderNotifPanel);
+    // close on outside click
+    document.addEventListener('click', e => {
+      if (!panel.contains(e.target) && e.target !== btn)
+        panel.style.display = 'none';
+    });
+  }
+
+  function _renderNotifPanel() {
+    const p = document.getElementById('skfxNotifPanel');
+    if (!p) return;
+    p.style.display = p.style.display === 'none' ? 'flex' : 'none';
+    const mb = document.getElementById('skfxMuteBtn');
+    if (mb) mb.textContent = _muted ? 'UNMUTE' : 'MUTE';
+    _renderHistory();
+  }
+
+  /* ── Public API ── */
+  return { send, checkSignalAlert, checkHighProbAlert, checkKillZoneAlert, newsAlert, toggleMute, init: _injectUI };
+})();
+
+/* ── Bootstrap after DOM ready ── */
+document.addEventListener('DOMContentLoaded', () => {
+  SKFX_NOTIF.init();
+
+  /* Hook into existing session-bar to detect kill zone opens */
+  const _origUpdateSession = window.updateSessionBar;
+  if (typeof _origUpdateSession === 'function') {
+    window.updateSessionBar = function(...a) {
+      _origUpdateSession.apply(this, a);
+      const active = document.querySelectorAll('.sess-overlap, .sess-active');
+      active.forEach(el => {
+        const txt = el.textContent.trim();
+        if (txt.includes('LONDON') || txt.includes('NEW YORK') || txt.includes('OVERLAP')) {
+          SKFX_NOTIF.checkKillZoneAlert(txt);
+        }
+      });
+    };
+  }
+
+  /* Poll signals every 60 s to catch new setups */
+  setInterval(() => {
+    if (typeof PAIRS === 'undefined' || typeof cache === 'undefined') return;
+    const candidates = [];
+    PAIRS.forEach(pair => {
+      const d = cache[pair.sym];
+      if (!d) return;
+      SKFX_NOTIF.checkSignalAlert(pair, d.result);
+      if (d.result?.isHighProb && d.result?.dir !== 'WAIT') candidates.push(pair);
+    });
+    if (candidates.length) SKFX_NOTIF.checkHighProbAlert(candidates);
+  }, 60000);
+
+  /* Initial prompt after 3 s */
+  setTimeout(async () => {
+    if (Notification.permission === 'default') {
+      SKFX_NOTIF.send('SK·FX Alerts Ready', 'Click the 🔔 bell to enable trade signal notifications.', { tag: 'welcome' });
+    }
+  }, 3000);
+});
 </script>
 </body>
 </html>
